@@ -29,38 +29,41 @@
 ---
 
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
-
-### Week 1 — 2026-06-06
+### Week 1 — 2026-06-6
 
 **Attended this week's meeting:** Yes
 
 **Progress this week**
-- Completed end-to-end evaluation of a pretrained PointNav baseline model 
+- Completed end-to-end evaluation of a pretrained PointNav baseline model
   (trained for 64,512,768 steps) in the `van-gogh-room` test scene.
 - Achieved **Success Rate: 1.0000** and **SPL: 0.9523** on the test episode.
 - Generated first-person navigation video.
-- Read the Habitat PointNav paper (Savva et al., ICCV 2019) to understand 
-  what the baseline is actually measuring.
+- Read the Habitat PointNav paper (Savva et al., ICCV 2019).
+- Installed Habitat-Lab + habitat-baselines on Ubuntu 22.04 (RTX 5060 GPU).
+- Ran PPO PointNav training from scratch (~261,000 steps).
+- Self-trained baseline results: SR=0.88, SPL=0.80, Distance to goal=0.15m
+- Generated success demo (SPL=0.98) and failure demo (Distance=2.13m).
+- Selected paper to reproduce: DD-PPO (Wijmans et al., ICLR 2020).
+- Studied core concepts: PointNav, reward shaping, PPO, NeuPAN.
 
 **Challenges & blockers**
-- `ModuleNotFoundError` on first run: resolved by explicitly setting 
-  `PYTHONPATH=.:./habitat-lab:./habitat-baselines` before executing scripts.
-- Hydra config conflicts in `ppo_pointnav.yaml`: `num_updates` and 
-  `total_num_steps` were both set, and the full Gibson dataset (~tens of GB) 
-  was unavailable. Resolved by switching to `ppo_pointnav_example.yaml` and 
-  overriding the dataset path to the local `val/val.json.gz` (van-gogh-room, 
-  2.6 MB).
-- Model weight key mismatch (`RuntimeError: Error(s) in loading state_dict`): 
-  the downloaded `gibson-rgbd-best.pth` was trained on an older architecture 
-  with `actor_critic.` prefixes that the current codebase does not expect. 
-  Resolved by writing `fix_checkpoint.py` to strip the prefix from all keys 
-  and saving a clean `gibson-rgbd-fixed.pth`.
+- `ModuleNotFoundError` on first run: resolved by setting PYTHONPATH.
+- Hydra config conflicts: resolved by switching to `ppo_pointnav_example.yaml`.
+- Model weight key mismatch: resolved by writing `fix_checkpoint.py`.
+- Training instability: success rate dropped from 88% to 0% on scene change.
+- PyTorch 2.6 checkpoint compatibility issue with `weights_only=True`.
 
 **Next steps**
-- Search for more literature reviews to read.
+- Install ROS2 Humble, run TurtleSim.
+- Analyze success and failure cases in detail.
+- Plot training curves.
 
-**Hours spent (optional):**
+**Hours spent (optional):** 
 
 **Links (optional):**
+- [Success navigation demo](../src/success_navigation.gif)
+- [Failure navigation demo](../src/failure_navigation.gif)
+
+
 
 
