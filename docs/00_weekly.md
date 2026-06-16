@@ -31,39 +31,35 @@
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
 ### Week 1 — 2026-06-6
 
+### Week 1 — 2026-06-16
+
 **Attended this week's meeting:** Yes
 
 **Progress this week**
-- Completed end-to-end evaluation of a pretrained PointNav baseline model
-  (trained for 64,512,768 steps) in the `van-gogh-room` test scene.
-- Achieved **Success Rate: 1.0000** and **SPL: 0.9523** on the test episode.
-- Generated first-person navigation video.
-- Read the Habitat PointNav paper (Savva et al., ICCV 2019).
-- Installed Habitat-Lab + habitat-baselines on Ubuntu 22.04 (RTX 5060 GPU).
-- Ran PPO PointNav training from scratch (~261,000 steps).
-- Self-trained baseline results: SR=0.88, SPL=0.80, Distance to goal=0.15m
-- Generated success demo (SPL=0.98) and failure demo (Distance=2.13m).
-- Selected paper to reproduce: DD-PPO (Wijmans et al., ICLR 2020).
-- Studied core concepts: PointNav, reward shaping, PPO, NeuPAN.
+- Installed Habitat-Lab + habitat-baselines on Ubuntu 22.04 (RTX 5060, 8GB VRAM).
+- Ran PPO PointNav training from scratch (~261,000 steps, ~40 min).
+- Baseline results: SR=0.88, SPL=0.80, Distance to goal=0.15m.
+- Evaluated pretrained model (64M steps): SR=1.00, SPL=0.95.
+- Generated success demo (SPL=0.98) and failure demo (NE=2.13m).
+- Selected reproduction target: DD-PPO (Wijmans et al., ICLR 2020).
+- Studied core concepts: PointNav task, reward shaping, PPO, NeuPAN.
+- Installed ROS2 Rolling on Ubuntu 22.04.
+- Ran TurtleSim with Python API autonomous navigation (goal-reaching controller).
+- Built Qwen2.5-0.5B language control pipeline: natural language → goal coordinates → ROS2 → TurtleSim.
 
 **Challenges & blockers**
-- `ModuleNotFoundError` on first run: resolved by setting PYTHONPATH.
-- Hydra config conflicts: resolved by switching to `ppo_pointnav_example.yaml`.
-- Model weight key mismatch: resolved by writing `fix_checkpoint.py`.
-- Training instability: success rate dropped from 88% to 0% on scene change.
-- PyTorch 2.6 checkpoint compatibility issue with `weights_only=True`.
+- Training instability: SR dropped from 88% to 0% on scene switch (generalization issue).
+- PyTorch 2.6 / Habitat checkpoint incompatibility (`weights_only=True`): fixed by patching `ppo_trainer.py`.
+- conda Python 3.9 vs ROS2 Python 3.10 conflict: resolved by separating Qwen (conda) and ROS2 (system Python) into two processes communicating via file.
 
 **Next steps**
-- Install ROS2 Humble, run TurtleSim.
 - Analyze success and failure cases in detail.
-- Plot training curves.
+- Plot training curves from log data.
+- Run longer PPO training for stronger baseline.
 
 **Hours spent (optional):** 
 
 **Links (optional):**
 - [Success navigation demo](../src/success_navigation.gif)
 - [Failure navigation demo](../src/failure_navigation.gif)
-
-
-
-
+- [Qwen + TurtleSim demo](../src/qwen_turtlesim.png)
