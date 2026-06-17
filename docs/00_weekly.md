@@ -34,6 +34,24 @@
 **Attended this week's meeting:** Yes
 
 **Progress this week**
+## Experiment 2: Collision Penalty = -0.5 (Failed)
+
+**Hypothesis:** Adding a large collision penalty will reduce 
+collisions and improve path efficiency.
+
+**Result:** Training failed to learn.
+- update 1600+: success = 0.000
+- reward stuck at -0.015 (constant)
+- Agent kept colliding without learning to navigate
+
+**Analysis:** 
+Penalty of -0.5 is too large relative to the distance reward signal.
+The negative reward dominated, causing the agent to learn to 
+stay still rather than explore toward the goal.
+This is a classic reward shaping failure: 
+too strong a penalty can prevent exploration entirely.
+
+**Next experiment:** Reduce collision penalty to -0.1
 
 - Started Habitat PPO PointNav training from scratch (official baseline):
   - Scene: van-gogh-room
@@ -103,6 +121,26 @@ The training curve shows three distinct phases:
 - Final baseline metrics (moving average):
   - Success Rate: ~0.85
   - SPL: ~0.65
+
+
+## Experiment 2: Collision Penalty = -0.5 (Failed)
+
+**Hypothesis:** Adding a large collision penalty will reduce 
+collisions and improve path efficiency.
+
+**Result:** Training failed to learn.
+- update 1600+: success = 0.000
+- reward stuck at -0.015 (constant)
+- Agent kept colliding without learning to navigate
+
+**Analysis:** 
+Penalty of -0.5 is too large relative to the distance reward signal.
+The negative reward dominated, causing the agent to learn to 
+stay still rather than explore toward the goal.
+This is a classic reward shaping failure: 
+too strong a penalty can prevent exploration entirely.
+
+**Next experiment:** Reduce collision penalty to -0.1
 
  
           
