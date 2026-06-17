@@ -160,21 +160,8 @@ dependency conflicts with Habitat.
 | | |
 |:---:|:---|
 | ![neupan_corridor](../src/corridor_diff_ani.gif) | **Corridor navigation** <br> Robot navigates through corridor with static obstacles. <br> Green wave trajectory shows real-time path adjustment. <br> Forward execution time: **0.083ms** per step. <br> Successfully reaches goal in 20.4s. |
-| ![neupan_dyna_obs](../src/neupan_dyna_obs.gif) | **Dynamic obstacles (failed)** <br> Moving circular obstacles cross the robot path. <br> Robot collides and fails to reach goal. <br> **Root cause:** MPC prediction horizon insufficient <br> for fast-moving obstacles. Known NeuPAN limitation. |
+| ![neupan_dyna_obs](../src/dyna_obs_diff_ani.gif) | **Dynamic obstacles (failed)** <br> Moving circular obstacles cross the robot path. <br> Robot collides and fails to reach goal. <br> **Root cause:** MPC prediction horizon insufficient <br> for fast-moving obstacles. Known NeuPAN limitation. |
 | ![neupan_non_obs](../src/non_obs_diff_ani.gif) | **Non-convex obstacles** <br> Irregular-shaped obstacles scattered in environment. <br> Robot successfully navigates around all obstacles. <br> Point-level constraints handle arbitrary shapes without <br> requiring explicit shape models. |
-
-**PPO vs NeuPAN comparison:**
-
-| Aspect | PPO (this project) | NeuPAN |
-|---|---|---|
-| Method | Reinforcement Learning | MPC + Neural Network |
-| Static obstacles | ⚠️ Sometimes wall-stuck | ✅ Handles well |
-| Dynamic obstacles | ❌ Not tested | ⚠️ Struggles |
-| Non-convex obstacles | ❌ Not tested | ✅ Handles well |
-| Training time | Hours (12000+ updates) | 1-2h (DUNE model only) |
-| Inference speed | ~ms | **0.083ms** |
-| Map required | Yes (Habitat scene) | ❌ Map-free |
-| Generalization | Limited to training scenes | Any environment |
 
 **Key insight:**
 NeuPAN is faster and more generalizable for local obstacle
@@ -242,6 +229,10 @@ local avoidance, RL for high-level goal understanding.
 - [Failure case 1 wall stuck](../src/failure_1.gif)
 - [Failure case 2 far goal](../src/failure_2.gif)
 - [Failure case 3 episode terminated](../src/failure_3.gif)
+- [neupan_corridor](../src/corridor_diff_ani.gif) 
+- [neupan_dyna_obs](../src/dyna_obs_diff_ani.gif) 
+- [neupan_non_obs](../src/non_obs_diff_ani.gif) 
+
 
    
 ### Week 1 — 2026-06-6
