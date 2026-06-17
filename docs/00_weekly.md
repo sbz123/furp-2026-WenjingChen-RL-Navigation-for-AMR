@@ -29,121 +29,83 @@
 ---
 
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
-### Week 2 — 2026-06-15
+### Week 2 — 2026-06-17
 
 **Attended this week's meeting:** Yes
 
 **Progress this week**
-## Experiment 2: Collision Penalty = -0.5 (Failed)
 
-**Hypothesis:** Adding a large collision penalty will reduce 
-collisions and improve path efficiency.
-
-**Result:** Training failed to learn.
-- update 1600+: success = 0.000
-- reward stuck at -0.015 (constant)
-- Agent kept colliding without learning to navigate
-
-**Analysis:** 
-Penalty of -0.5 is too large relative to the distance reward signal.
-The negative reward dominated, causing the agent to learn to 
-stay still rather than explore toward the goal.
-This is a classic reward shaping failure: 
-too strong a penalty can prevent exploration entirely.
-
-**Next experiment:** Reduce collision penalty to -0.1
-
-- Started Habitat PPO PointNav training from scratch (official baseline):
-  - Scene: van-gogh-room
-  - Algorithm: PPO
+- Started Habitat PPO PointNav training (official baseline):
+  - Algorithm: PPO, Scene: van-gogh-room
   - update 0: success = 0.000
   - update ~650: success first appears (0.333)
-  - update ~5000: success = 0.75 ~ 0.88
-  - update ~12000: moving average success ≈ 0.85, SPL ≈ 0.65
-- Fixed PyTorch 2.6 checkpoint compatibility issue
-  (added weights_only=False in ddp_utils.py line 224)
-  to enable resume training without deleting checkpoints.
-- Wrote plot_training.py to extract training log and generate
-  training curve (Success Rate / SPL / Reward vs Updates).
-  
-
-**Challenges & blockers**
-
-- Hydra config error with curly braces in data path:
-  resolved by hardcoding train/train.json.gz path.
-- PyTorch 2.6 breaking change caused checkpoint load failure:
-  resolved by modifying ddp_utils.py weights_only=False.
-- Success rate shows large fluctuations during training:
-  identified as normal behavior caused by scene switching
-  in the dataset, not a training failure.
-
-**Next steps**
-
-- Let training continue to 50000+ steps.
-- Add collision penalty as an improvement experiment.
-- Compare improved model vs baseline (SR, SPL, collision rate).
-
-**Hours spent:** 
-
-**Links:** 
-- [Training log](../src/training_log.txt)
-- [Plot script](../src/plot_training.py)
-- [Training curve](../src/training_curve.png)
+  - update ~12000: success ≈ 0.85, SPL ≈ 0.65
+- Fixed PyTorch 2.6 checkpoint issue (weights_only=False).
+- Generated training curve with moving average (plot_training.py).
+- Ran reward shaping experiments (3 variants, see below).
 
 **Training curve analysis**
 
-The training curve shows three distinct phases:
+Three distinct phases observed:
 
-1. **Learning phase (update 0-2000):**
-   Success rate rises rapidly from 0 to ~0.75.
-   The agent transitions from random exploration
-   to goal-directed navigation within ~2000 updates.
+1. Learning phase (update 0-2000): success rises from 0 to ~0.75,
+   agent transitions from random exploration to goal-directed navigation.
+2. Convergence phase (update 2000-12000): moving average stabilizes
+   at ~0.85 success, ~0.65 SPL.
+3. Fluctuation: large variance caused by scene switching in dataset,
+   not a training failure.
 
-2. **Convergence phase (update 2000-12000):**
-   Moving average success rate stabilizes at ~0.85.
-   SPL stabilizes at ~0.65, indicating the agent not only
-   reaches the goal but also takes reasonably efficient paths.
+Reward moving average stays near 0 despite high success rate,
+meaning most reward comes from the sparse success bonus.
+This motivates the reward shaping experiments below.
 
-3. **Fluctuation analysis:**
-   Raw success rate shows large variance throughout training.
-   This is caused by scene switching in the dataset —
-   when a harder scene is sampled, success temporarily drops,
-   then recovers as the agent adapts.
-   This suggests the baseline policy has limited
-   generalization across scenes.
+**Reward shaping experiments**
 
-**Key observations:**
-- Reward moving average stays near 0 despite high success rate,
-  meaning most reward comes from the sparse success bonus.
-  This is a known limitation of the default reward design
-  and motivates the next experiment: adding a collision penalty
-  to provide denser reward signal.
-- Final baseline metrics (moving average):
-  - Success Rate: ~0.85
-  - SPL: ~0.65
+| Experiment | Penalty | Result |
+|---|---|---|
+| Baseline | none | SR ~0.85, SPL ~0.65, converges fast |
+| Experiment 1 | -0.5 | Failed: reward stuck at -0.015, success = 0 |
+| Experiment 2 | -0.1 | Learning but slow: SR ~0.6 at update 10000 |
 
+**Experiment 1 analysis (penalty = -0.5):**
+Penalty too large relative to distance reward signal.
+Negative reward dominated, agent learned to stay still
+rather than explore. Classic reward shaping failure:
+too strong a penalty prevents exploration entirely.
 
-## Experiment 2: Collision Penalty = -0.5 (Failed)
+**Experiment 2 analysis (penalty = -0.1):**
+Agent can learn but convergence is ~3x slower than baseline.
+Suggests collision penalty changes exploration behavior,
+making the agent more cautious at the cost of learning speed.
 
-**Hypothesis:** Adding a large collision penalty will reduce 
-collisions and improve path efficiency.
+**Key finding:**
+Reward shaping is a double-edged sword.
+Too strong → training fails.
+Too weak → no effect.
+Careful tuning is required.
 
-**Result:** Training failed to learn.
-- update 1600+: success = 0.000
-- reward stuck at -0.015 (constant)
-- Agent kept colliding without learning to navigate
+**Challenges & blockers**
 
-**Analysis:** 
-Penalty of -0.5 is too large relative to the distance reward signal.
-The negative reward dominated, causing the agent to learn to 
-stay still rather than explore toward the goal.
-This is a classic reward shaping failure: 
-too strong a penalty can prevent exploration entirely.
+- Hydra curly braces syntax error: resolved by hardcoding data path.
+- PyTorch 2.6 checkpoint load failure: resolved by weights_only=False.
+- Collision penalty -0.5 killed learning: identified and documented
+  as a failed experiment, reduced to -0.1.
 
-**Next experiment:** Reduce collision penalty to -0.1
+**Next steps**
 
- 
-          
+- Read PPO paper and reward shaping literature.
+- Consider potential-based reward shaping as next improvement.
+- Run penalty -0.1 experiment to full convergence.
+
+**Hours spent:** 
+
+**Links:**
+- [Training curve (baseline)](../src/training_curve.png)
+- [Comparison curve](../src/comparison_curve.png)
+- [Training log baseline](../src/training_log_baseline.txt)
+- [Plot script](../src/plot_training.py)
+
+   
 ### Week 1 — 2026-06-6
 
 **Attended this week's meeting:** Yes
