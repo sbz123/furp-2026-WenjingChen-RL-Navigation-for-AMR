@@ -84,6 +84,30 @@ Too strong → training fails.
 Too weak → no effect.
 Careful tuning is required.
 
+**Deeper analysis:**
+
+The baseline reward function is sparse:
+most of the learning signal comes from the +2.5 success bonus,
+which the agent only receives at the very end of an episode.
+This explains why early training (update 0-650) shows zero success —
+the agent never reaches the goal by chance, so it receives
+no positive feedback.
+
+Adding collision penalty was intended to provide denser signal,
+but introduced a new problem: the penalty dominates early training
+when the agent has not yet learned to navigate,
+causing it to avoid movement altogether (penalty -0.5 case)
+or move very cautiously (penalty -0.1 case).
+
+This reveals a fundamental tension in reward design:
+- Dense rewards help learning speed but can distort behavior.
+- Sparse rewards preserve correct behavior but slow learning.
+
+A better approach (future work) would be potential-based reward shaping,
+which provides dense guidance while mathematically guaranteeing
+the optimal policy is unchanged.
+
+
 **Challenges & blockers**
 
 - Hydra curly braces syntax error: resolved by hardcoding data path.
