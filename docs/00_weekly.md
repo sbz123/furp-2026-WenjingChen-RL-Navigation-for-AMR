@@ -40,7 +40,7 @@
   - Algorithm: PPO
   - update 0: success = 0.000
   - update ~650: success first appears (0.333)
-  - update ~5000: success = 0.75~0.88
+  - update ~5000: success = 0.75 ~ 0.88
   - update ~12000: moving average success ≈ 0.85, SPL ≈ 0.65
 - Fixed PyTorch 2.6 checkpoint compatibility issue
   (added weights_only=False in ddp_utils.py line 224)
