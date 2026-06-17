@@ -29,6 +29,8 @@
 ---
 
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
+
+
 ### Week 2 — 2026-06-15
 
 **Attended this week's meeting:** Yes
@@ -46,6 +48,8 @@
 - Generated training curve with moving average (plot_training.py).
 - Ran reward shaping experiments (3 variants, see below).
 - Generated success and failure episode videos, converted to GIF.
+- Installed NeuPAN (TRO 2025) in separate conda environment,
+  ran 3 scenarios for comparison with PPO baseline.
 
 **Training curve analysis**
 
@@ -138,6 +142,61 @@ guaranteeing the optimal policy is unchanged.
 | ![failure_2](../src/failure_2.gif) | **Case 2: Long-distance failure** <br> Start: distance=11.81m → End: distance=11.81m (no movement) <br> Goal far outside training distribution, agent barely moves. <br> **Root cause:** policy not generalized to long-horizon tasks. <br> **Proposed fix:** curriculum learning. |
 | ![failure_3](../src/failure_3.gif) | **Case 3: Immediate termination** <br> Duration: 0.2s, episode ends almost instantly. <br> Goal distance: 12.32m — beyond policy capability. <br> **Root cause:** episode difficulty exceeds policy capability. <br> Suggests evaluation set contains unsolvable episodes, inflating failure rate. |
 
+
+**NeuPAN comparison study**
+
+NeuPAN (TRO 2025) is a model-based neural planner that directly
+maps obstacle point clouds to control actions via MPC optimization.
+Installed in a separate conda environment (Python 3.10) to avoid
+dependency conflicts with Habitat.
+
+| Scenario | Result | Notes |
+|---|---|---|
+| corridor (static obstacles) | ✅ Success | Smooth wave path, 20.4s |
+| dyna_obs (dynamic obstacles) | ❌ Failed | Moving obstacles too fast |
+| non_obs (non-convex obstacles) | ✅ Success | Handles irregular shapes |
+
+
+| | |
+|:---:|:---|
+| ![neupan_corridor](../src/neupan_corridor.gif) | **Corridor navigation** <br> Robot navigates through corridor with static obstacles. <br> Green wave trajectory shows real-time path adjustment. <br> Forward execution time: **0.083ms** per step. <br> Successfully reaches goal in 20.4s. |
+| ![neupan_dyna_obs](../src/neupan_dyna_obs.gif) | **Dynamic obstacles (failed)** <br> Moving circular obstacles cross the robot path. <br> Robot collides and fails to reach goal. <br> **Root cause:** MPC prediction horizon insufficient <br> for fast-moving obstacles. Known NeuPAN limitation. |
+| ![neupan_non_obs](../src/neupan_non_obs.gif) | **Non-convex obstacles** <br> Irregular-shaped obstacles scattered in environment. <br> Robot successfully navigates around all obstacles. <br> Point-level constraints handle arbitrary shapes without <br> requiring explicit shape models. |
+
+**PPO vs NeuPAN comparison:**
+
+| Aspect | PPO (this project) | NeuPAN |
+|---|---|---|
+| Method | Reinforcement Learning | MPC + Neural Network |
+| Static obstacles | ⚠️ Sometimes wall-stuck | ✅ Handles well |
+| Dynamic obstacles | ❌ Not tested | ⚠️ Struggles |
+| Non-convex obstacles | ❌ Not tested | ✅ Handles well |
+| Training time | Hours (12000+ updates) | 1-2h (DUNE model only) |
+| Inference speed | ~ms | **0.083ms** |
+| Map required | Yes (Habitat scene) | ❌ Map-free |
+| Generalization | Limited to training scenes | Any environment |
+
+**Key insight:**
+NeuPAN is faster and more generalizable for local obstacle
+avoidance. PPO learns end-to-end from raw pixels without
+manual constraint design, making it more flexible for
+complex tasks. The ideal system combines both: NeuPAN for
+local avoidance, RL for high-level goal understanding.
+
+---
+**What worked:**
+- Baseline PPO learns PointNav (SR ~0.85, SPL ~0.65)
+- Training curve shows clear 3-phase learning signal
+- Reward shaping experiments reveal important trade-offs
+- NeuPAN demonstrates superior obstacle handling (static/non-convex)
+
+
+**What did not work:**
+- Collision penalty -0.5: too strong, kills exploration
+- Collision penalty -0.1: enables learning but 3x slower
+- Neither penalty outperforms baseline
+- NeuPAN fails on fast dynamic obstacles
+
 **Challenges & blockers**
 
 - Hydra curly braces syntax error: resolved by hardcoding data path.
@@ -147,39 +206,28 @@ guaranteeing the optimal policy is unchanged.
 - Success rate shows large fluctuations during training:
   identified as normal behavior caused by scene switching,
   not a training failure.
+- NeuPAN dependency conflicts: resolved with separate conda env.
 
-**What worked:**
-- Baseline PPO successfully learns PointNav (SR ~0.85, SPL ~0.65)
-- Training curve shows clear learning signal across 12000 updates
-- Reward shaping experiments reveal important trade-offs
-
-**What did not work:**
-- Collision penalty -0.5: too strong, kills exploration entirely
-- Collision penalty -0.1: enables learning but 3x slower
-- Neither penalty variant outperforms the baseline
 
 **Next steps**
 
-Based on the analysis above, the following improvements are planned:
+1. **Implement potential-based reward shaping**
+   F(s,s') = γΦ(s') - Φ(s), Φ = distance to goal.
+   Mathematically guarantees optimal policy preserved.
 
-1. **Read potential-based reward shaping literature**
-   Potential-based shaping (Ng et al., 1999) mathematically
-   guarantees the optimal policy is preserved while providing
-   dense reward signal. Next step: implement
-   F(s,s') = γΦ(s') - Φ(s) where Φ is distance to goal.
-
-2. **Fix the stopping error**
-   Agent sometimes reaches goal but fails to execute STOP.
-   Possible fix: add small reward for executing STOP
-   when distance < 0.5m.
+2. **Fix stopping error**
+   Add small reward for STOP when distance < 0.5m.
 
 3. **Address long-distance failure**
-   Possible fix: curriculum learning — train on short distances
-   first, gradually increase episode difficulty.
+   Curriculum learning: short distances first, increase gradually.
 
 4. **Address wall-stuck failure**
-   Better approach: delayed penalty introduction — only apply
-   collision penalty after agent has learned basic navigation.
+   Delayed penalty: apply collision penalty only after
+   agent has learned basic navigation.
+
+5. **Read PPO and reward shaping papers**
+   Schulman et al. 2017 (PPO), Ng et al. 1999 (reward shaping).
+
 
 **Hours spent:** 
 
