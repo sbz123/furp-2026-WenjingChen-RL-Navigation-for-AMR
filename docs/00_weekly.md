@@ -122,56 +122,21 @@ guaranteeing the optimal policy is unchanged.
 
 **Success Cases**
 
-**Case 1: Near-optimal navigation (SPL=0.99)**
-![success_1](../src/success_1.gif)
-- Start: distance=1.98m → End: success=1, SPL=0.99
-- Agent moves directly toward goal with minimal turns.
-- SPL=0.99 means path length was almost identical to shortest path.
-- Represents the best-case behavior of the trained policy.
+| | |
+|:---:|:---|
+| ![success_1](../src/success_1.gif) | **Case 1: Near-optimal navigation (SPL=0.99)** <br> Start: distance=1.98m → End: success=1, SPL=0.99 <br> Agent moves directly toward goal with minimal turns. <br> SPL=0.99 means path was almost identical to shortest path. <br> Represents the best-case behavior of the trained policy. |
+| ![success_2](../src/success_2.gif) | **Case 2: Medium distance success (SPL=0.96)** <br> Start: distance=4.82m → End: success=1, SPL=0.96 <br> Longer episode, agent maintains goal-directed movement. <br> Confirms policy generalizes across different starting distances. |
+| ![success_3](../src/success_3.gif) | **Case 3: van-gogh-room success (SPL=0.98)** <br> Start: distance=2.12m → End: success=1, SPL=0.98 <br> Simple room layout allows agent to find efficient path. <br> Training scene — policy performs best in familiar environments. |
 
-**Case 2: Medium distance success (SPL=0.96)**
-![success_2](../src/success_2.gif)
-- Start: distance=4.82m → End: success=1, SPL=0.96
-- Longer episode, agent maintains goal-directed movement.
-- Confirms policy generalizes across different starting distances.
-
-**Case 3: van-gogh-room success (SPL=0.98)**
-![success_3](../src/success_3.gif)
-- Start: distance=2.12m → End: success=1, SPL=0.98
-- Simple room layout allows agent to find efficient path.
-- This is the actual training scene, showing the policy works
-  well in familiar environments.
+---
 
 **Failure Cases**
 
-**Case 1: Wall-stuck failure**
-![failure_1](../src/failure_1.gif)
-- Start: distance=3.92m → End: distance=5.28m (got further away)
-- Agent spawns facing a wall, depth camera sees only darkness.
-- No obstacle avoidance strategy: agent collides repeatedly.
-- Distance increases from 3.92m to 5.28m — moving away from goal.
-- This failure motivated the collision penalty experiments.
-- However, neither penalty variant solved this without slowing learning.
-- **Root cause:** policy learned goal-directed movement but not
-  recovery from dead-end situations.
-
-**Case 2: Long-distance failure**
-![failure_2](../src/failure_2.gif)
-- Start: distance=11.81m → End: distance=11.81m (no movement)
-- Goal is far outside the training distribution.
-- Agent barely moves, unable to make progress.
-- **Root cause:** policy has not generalized to long-horizon tasks.
-- **Proposed fix:** curriculum learning — train on short distances
-  first, gradually increase difficulty.
-
-**Case 3: Immediate termination**
-![failure_3](../src/failure_3.gif)
-- Duration: 0.2 seconds, episode ends almost instantly.
-- Goal distance: 12.32m — beyond what the policy can handle.
-- **Root cause:** episode difficulty exceeds policy capability.
-- Suggests evaluation set contains episodes the current policy
-  has no chance of solving, which inflates the reported failure rate.
-- A fairer evaluation would filter episodes by difficulty tier.
+| | |
+|:---:|:---|
+| ![failure_1](../src/failure_1.gif) | **Case 1: Wall-stuck failure** <br> Start: distance=3.92m → End: distance=5.28m (got further away) <br> Agent spawns facing a wall, depth camera sees only darkness. <br> Repeatedly collides, moves away from goal instead of toward it. <br> **Root cause:** no obstacle avoidance or recovery strategy. |
+| ![failure_2](../src/failure_2.gif) | **Case 2: Long-distance failure** <br> Start: distance=11.81m → End: distance=11.81m (no movement) <br> Goal far outside training distribution, agent barely moves. <br> **Root cause:** policy not generalized to long-horizon tasks. <br> **Proposed fix:** curriculum learning. |
+| ![failure_3](../src/failure_3.gif) | **Case 3: Immediate termination** <br> Duration: 0.2s, episode ends almost instantly. <br> Goal distance: 12.32m — beyond policy capability. <br> **Root cause:** episode difficulty exceeds policy capability. <br> Suggests evaluation set contains unsolvable episodes, inflating failure rate. |
 
 **Challenges & blockers**
 
