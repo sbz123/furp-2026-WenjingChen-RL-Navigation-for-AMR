@@ -29,23 +29,98 @@
 ---
 
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
-### Week 1 — 2026-06-6
+### Week 2 — 2026-06-15
 
-### Week 1 — 2026-06-16
+**Attended this week's meeting:** Yes
+
+**Progress this week**
+
+- Started Habitat PPO PointNav training from scratch (official baseline):
+  - Scene: van-gogh-room
+  - Algorithm: PPO
+  - update 0: success = 0.000
+  - update ~650: success first appears (0.333)
+  - update ~5000: success = 0.75~0.88
+  - update ~12000: moving average success ≈ 0.85, SPL ≈ 0.65
+- Fixed PyTorch 2.6 checkpoint compatibility issue
+  (added weights_only=False in ddp_utils.py line 224)
+  to enable resume training without deleting checkpoints.
+- Wrote plot_training.py to extract training log and generate
+  training curve (Success Rate / SPL / Reward vs Updates).
+  
+
+**Challenges & blockers**
+
+- Hydra config error with curly braces in data path:
+  resolved by hardcoding train/train.json.gz path.
+- PyTorch 2.6 breaking change caused checkpoint load failure:
+  resolved by modifying ddp_utils.py weights_only=False.
+- Success rate shows large fluctuations during training:
+  identified as normal behavior caused by scene switching
+  in the dataset, not a training failure.
+
+**Next steps**
+
+- Let training continue to 50000+ steps.
+- Add collision penalty as an improvement experiment.
+- Compare improved model vs baseline (SR, SPL, collision rate).
+
+**Hours spent:** 
+
+**Links:** 
+- [Training log](../src/training_log.txt)
+- [Plot script](../src/plot_training.py)
+- [Training curve](../src/training_curve.png)
+
+**Training curve analysis**
+
+The training curve shows three distinct phases:
+
+1. **Learning phase (update 0-2000):**
+   Success rate rises rapidly from 0 to ~0.75.
+   The agent transitions from random exploration
+   to goal-directed navigation within ~2000 updates.
+
+2. **Convergence phase (update 2000-12000):**
+   Moving average success rate stabilizes at ~0.85.
+   SPL stabilizes at ~0.65, indicating the agent not only
+   reaches the goal but also takes reasonably efficient paths.
+
+3. **Fluctuation analysis:**
+   Raw success rate shows large variance throughout training.
+   This is caused by scene switching in the dataset —
+   when a harder scene is sampled, success temporarily drops,
+   then recovers as the agent adapts.
+   This suggests the baseline policy has limited
+   generalization across scenes.
+
+**Key observations:**
+- Reward moving average stays near 0 despite high success rate,
+  meaning most reward comes from the sparse success bonus.
+  This is a known limitation of the default reward design
+  and motivates the next experiment: adding a collision penalty
+  to provide denser reward signal.
+- Final baseline metrics (moving average):
+  - Success Rate: ~0.85
+  - SPL: ~0.65
+
+ 
+          
+### Week 1 — 2026-06-6
 
 **Attended this week's meeting:** Yes
 
 **Progress this week**
 - Installed Habitat-Lab + habitat-baselines on Ubuntu 22.04 (RTX 5060, 8GB VRAM).
-- Ran PPO PointNav training from scratch (~261,000 steps, ~40 min).
-- Baseline results: SR=0.88, SPL=0.80, Distance to goal=0.15m.
-- Evaluated pretrained model (64M steps): SR=1.00, SPL=0.95.
-- Generated success demo (SPL=0.98) and failure demo (NE=2.13m).
 - Selected reproduction target: DD-PPO (Wijmans et al., ICLR 2020).
 - Studied core concepts: PointNav task, reward shaping, PPO, NeuPAN.
-- Installed ROS2 Rolling on Ubuntu 22.04.
-- Ran TurtleSim with Python API autonomous navigation (goal-reaching controller).
-- Built Qwen2.5-0.5B language control pipeline: natural language → goal coordinates → ROS2 → TurtleSim.
+- Installed ROS 2 Humble on native Ubuntu 22.04 dual-boot system.
+- Ran TurtleSim to verify basic ROS 2 node and topic communication.
+- Locally deployed Qwen VLM (4-bit quantized, ~988MB VRAM) and built
+  a mini VLN pipeline:
+  natural language instruction → Qwen parses coordinates
+  → ROS 2 topic → TurtleSim executes.
+  Tested "go to top right corner" → successfully navigated to (10.0, 10.0).
 
 **Challenges & blockers**
 - Training instability: SR dropped from 88% to 0% on scene switch (generalization issue).
