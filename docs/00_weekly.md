@@ -31,6 +31,7 @@
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
 
 
+- 
 ### Week 2 — 2026-06-15
 
 **Attended this week's meeting:** Yes
@@ -50,6 +51,10 @@
 - Generated success and failure episode videos, converted to GIF.
 - Installed NeuPAN (TRO 2025) in separate conda environment,
   ran 3 scenarios for comparison with PPO baseline.
+- Designed and built 5 structured hard-scenario test environments in IR-SIM
+- Evaluated CNNTD3 (SR=92% on standard random-obstacle scenes) across all scenarios
+- Identified 2 distinct failure modes with clear root causes
+- Established complete failure map as foundation for improvement design
 
 **Training curve analysis**
 
@@ -184,6 +189,69 @@ local avoidance, RL for high-level goal understanding.
 - Neither penalty outperforms baseline
 - NeuPAN fails on fast dynamic obstacles
 
+**Hard Scenario Benchmark: CNNTD3 Failure Analysis**
+
+All tests use the trained CNNTD3 checkpoint (CNN + TD3, state_dim=185, 180-beam LiDAR).
+Each scenario runs 15–18 episodes across varied initial orientations.
+
+| Scenario | SR | CR | TR | Failure Mode | Root Cause |
+|---|---|---|---|---|---|
+| Baseline (random obstacles) | 92% | 8% | 0% | — | In-distribution, normal |
+| S1 U-trap (agent inside U, goal outside) | **0%** | 0% | 100% | Freeze / oscillate | LiDAR blocked on 3 sides; goal signal points through wall; no backtrack |
+| S2 Double-U (facing right) | 100% | 0% | 0% | — | Goal direction aligned with exit, no trap entered |
+| S2 Double-U (facing up/left) | **33%** | 0% | 67% | Enter U, cannot exit | Agent enters concave trap along heading direction, never reverses |
+| S3 Narrow door (width ≥ 0.6m) | 100% | 0% | 0% | — | Not a weakness; CNN handles narrow free space |
+| S3 Narrow door (width 0.45–0.5m) | **0–5%** | 95–100% | 0% | Collision at doorframe | Door width only 0.05–0.1m > robot diameter; insufficient precision to align |
+| S4 Dead-end maze | **67%** | 0% | 33% | Enter dead-end, timeout | No memory; agent cannot recognize revisited dead-end; exhausts step budget |
+| S5 Symmetric corridor (facing right) | 100% | 0% | 0% | — | Initial heading matches goal direction |
+| S5 Symmetric corridor (facing left) | **0%** | 0% | 100% | Symmetric oscillation | LiDAR returns identical upper/lower readings; deterministic policy produces unstable fixed point, agent cannot turn |
+
+---
+
+**Two Core Failure Modes Identified**
+
+**Mode A — Concave Trap (local minimum):** Scenarios S1, S2, S4.
+
+The agent enters a concave region. The goal-attraction signal points through the wall rather than toward the exit. Without memory of prior positions, the reactive policy has no mechanism to generate the backtrack-then-detour behavior required. The agent either freezes at the entrance or circles inside the trap until timeout.
+
+This is a known open problem in mapless RL navigation. Wall-following heuristics (Bug algorithms) address it classically; memory-augmented policies (LSTM, GRU) are the current RL approach but remain unreliable in unstructured environments.
+
+**Mode B — Symmetric Deadlock:** Scenario S5.
+
+When the LiDAR input is geometrically symmetric (equal obstacle distances above and below), the deterministic TD3 policy produces near-zero angular velocity — neither turning left nor right. The agent moves forward until it hits the end wall, then stays there oscillating. This is a degenerate fixed point of a deterministic policy under symmetric observation; a stochastic policy (e.g. SAC) would break symmetry naturally.
+
+---
+
+**Narrow Door Threshold**
+
+An additional finding from S3: CNNTD3 passes doors reliably when width ≥ 0.6m (1.5× robot diameter), but fails completely below 0.5m. This defines a precision boundary for the current CNN architecture.
+
+| Door width | SR | CR |
+|---|---|---|
+| 0.45m | 5% | 95% |
+| 0.50m | 0% | 100% |
+| 0.60m | 100% | 0% |
+| 0.70m | 100% | 0% |
+| 0.80m | 100% | 0% |
+| 1.00m | 100% | 0% |
+
+---
+
+**Comparison Framework (planned)**
+
+Three methods will be compared across all scenarios:
+
+| Method | Type | Memory | Planning |
+|---|---|---|---|
+| CNNTD3 (current) | End-to-end RL | None | None (reactive) |
+| RCPG (next step) | End-to-end RL | LSTM | None (reactive) |
+| NeuPAN (reference) | Model-based neural | None | MPC (local) |
+
+The hypothesis is that LSTM memory resolves Mode A (dead-end / trap) but not Mode B (symmetric deadlock), while NeuPAN's MPC planning resolves both but requires more computation.
+
+---
+
+
 **Challenges & blockers**
 
 - Hydra curly braces syntax error: resolved by hardcoding data path.
@@ -194,26 +262,19 @@ local avoidance, RL for high-level goal understanding.
   identified as normal behavior caused by scene switching,
   not a training failure.
 - NeuPAN dependency conflicts: resolved with separate conda env.
+- IR-SIM linestring obstacles do not form closed rooms automatically; each wall segment must be placed individually, making maze design iterative.
+- CNNTD3 model uses a different class than TD3 (separate CNN architecture); had to update import and state_dim (185, not 25) before tests could run.
+- World coordinate system: rectangle `length` = x-direction, `width` = y-direction at angle=0; swapping these produces rotated walls.
+
 
 
 **Next steps**
 
-1. **Implement potential-based reward shaping**
-   F(s,s') = γΦ(s') - Φ(s), Φ = distance to goal.
-   Mathematically guarantees optimal policy preserved.
-
-2. **Fix stopping error**
-   Add small reward for STOP when distance < 0.5m.
-
-3. **Address long-distance failure**
-   Curriculum learning: short distances first, increase gradually.
-
-4. **Address wall-stuck failure**
-   Delayed penalty: apply collision penalty only after
-   agent has learned basic navigation.
-
-5. **Read PPO and reward shaping papers**
-   Schulman et al. 2017 (PPO), Ng et al. 1999 (reward shaping).
+1. Train RCPG (LSTM-based) on the same standard environment as CNNTD3 baseline
+2. Read PPO and reward shaping papers
+3. Design improved reward function for CNNTD3: add exploration bonus + backtrack penalty to address Mode A
+4. Re-train improved CNNTD3 and evaluate on hard scenarios
+5. Begin comparison table: CNNTD3 vs CNNTD3-improved vs RCPG vs NeuPAN
 
 
 **Hours spent:** 
@@ -232,6 +293,19 @@ local avoidance, RL for high-level goal understanding.
 - [neupan_corridor](../src/corridor_diff_ani.gif) 
 - [neupan_dyna_obs](../src/dyna_obs_diff_ani.gif) 
 - [neupan_non_obs](../src/non_obs_diff_ani.gif) 
+- [Test script u trap cnntd3](../src/test_u_trap_cnntd3.py)
+- [Test script dead end maze](../src/test_dead_end_maze.py)
+- [Test script narrow door](../src/test_narrow_door.py)
+- [Test script s5 s2](../src/test_s5_s2.py)
+- [World u trap](../src/robot_nav/worlds/u_trap_world.yaml)
+- [World dead end maze](../src/dead_end_maze_world.yaml)
+- [World narrow door](../src/narrow_door_world.yaml)
+- [World symmetric corridor](../src/symmetric_corridor_world.yaml)
+- [World double u](../src/double_u_world.yaml)
+- [Results u trap](../src/u_trap_results.csv)
+- [Results dead end maze](../src/dead_end_maze_results.csv)
+- [Results narrow door](../src/narrow_door_results.csv)
+- [Results s5 s2](../src/s5_s2_results.csv)
 
 
    
