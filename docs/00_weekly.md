@@ -31,7 +31,6 @@
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
 
 
-- 
 ### Week 2 — 2026-06-15
 
 **Attended this week's meeting:** Yes
@@ -53,8 +52,19 @@
   ran 3 scenarios for comparison with PPO baseline.
 - Designed and built 5 structured hard-scenario test environments in IR-SIM
 - Evaluated CNNTD3 (SR=92% on standard random-obstacle scenes) across all scenarios
+  - Training: 60 epochs × 70 episodes, 3h on RTX 5060
+  - Final eval: SR=92%, CR=8%
+  - TensorBoard curves show stable convergence from epoch ~25
 - Identified 2 distinct failure modes with clear root causes
 - Established complete failure map as foundation for improvement design
+- Trained RCPG (GRU + TD3, state_dim=185) on the same standard environment as CNNTD3 baseline:
+  - Training: 60 epochs × 70 episodes, ~15h on RTX 5060
+  - Final eval: SR=88%, CR=8%, comparable to CNNTD3 (SR=92%)
+  - TensorBoard curves show stable convergence from epoch ~25
+- Evaluated RCPG on all 5 hard scenarios and compared against CNNTD3
+- Identified that GRU memory is a double-edged sword: helps in some scenarios, hurts in others
+- Conducted literature review on local minima escape in mapless RL navigation
+
 
 **Training curve analysis**
 
@@ -237,19 +247,45 @@ An additional finding from S3: CNNTD3 passes doors reliably when width ≥ 0.6m 
 
 ---
 
-**Comparison Framework (planned)**
+| Scenario | CNNTD3 SR | RCPG SR | Difference | Interpretation |
+|---|---|---|---|---|
+| S1 U-trap | 0% | 0% | 0 | Both fail: neither can backtrack |
+| S2 Double-U | 33% | 0% | −33% | GRU makes agent more committed to wrong path |
+| S3 Narrow door (0.45m) | 4.8% | 90.5% | **+85.7%** | GRU history enables precise alignment |
+| S4 Dead-end maze | 67% | 0% | −67% | GRU persistence prevents course correction |
+| S5 Symmetric corridor | 83% | 100% | **+17%** | GRU breaks symmetric LiDAR deadlock |
 
-Three methods will be compared across all scenarios:
 
-| Method | Type | Memory | Planning |
-|---|---|---|---|
-| CNNTD3 (current) | End-to-end RL | None | None (reactive) |
-| RCPG (next step) | End-to-end RL | LSTM | None (reactive) |
-| NeuPAN (reference) | Model-based neural | None | MPC (local) |
+**Key finding: GRU memory is a double-edged sword**
 
-The hypothesis is that LSTM memory resolves Mode A (dead-end / trap) but not Mode B (symmetric deadlock), while NeuPAN's MPC planning resolves both but requires more computation.
+GRU memory improves precision navigation (+85.7% on narrow doors)
+and breaks symmetry deadlock (+17% on symmetric corridors).
+However, it actively hurts performance on concave trap scenarios
+(−33% on double-U, −67% on dead-end maze). The GRU makes the agent
+more "persistent" in its current trajectory, which helps when the
+trajectory is correct (narrow passages) but prevents recovery when
+the agent enters a dead-end.
 
----
+**Root cause analysis**
+
+The U-trap failure (SR=0% for both methods) is not an architecture
+problem but a training distribution problem. Both models were trained
+on random obstacle environments and never encountered scenarios
+requiring backtracking (moving away from goal temporarily).
+Memory cannot produce behaviors the agent never learned.
+
+**Literature review: local minima escape (2024-2026)**
+
+- Kim et al. (2024): Hybrid APF + wall-following with learned switching.
+  Effective for simple traps but requires manual trap detector design.
+- Miranda et al. (2024, IEEE TIE): Reward shaping with map info + SAC.
+  Effective but requires map, violating mapless assumption.
+- SRU (2025): Spatially-enhanced recurrent unit replacing standard LSTM.
+  Shows improvement over LSTM but requires full architecture redesign.
+- DreamFlow (2026): Conditional flow matching to predict beyond sensor range.
+  State-of-the-art but complex, requires generative model training.
+- Jain et al. (2026): Attributes reactive policy failures in U-traps
+  to weak pairwise interaction biases, not just short horizons.
 
 
 **Challenges & blockers**
@@ -265,16 +301,22 @@ The hypothesis is that LSTM memory resolves Mode A (dead-end / trap) but not Mod
 - IR-SIM linestring obstacles do not form closed rooms automatically; each wall segment must be placed individually, making maze design iterative.
 - CNNTD3 model uses a different class than TD3 (separate CNN architecture); had to update import and state_dim (185, not 25) before tests could run.
 - World coordinate system: rectangle `length` = x-direction, `width` = y-direction at angle=0; swapping these produces rotated walls.
+- RCPG training took 15h (3x longer than CNNTD3's 3h) due to GRU
+  sequential computation with history_len=10. Resolved by running
+  overnight with sleep/hibernate disabled.
+- RCPG training script missing world_file parameter and progress
+  printing; fixed by adding world_file="worlds/robot_world.yaml"
+  and per-episode logging.
 
 
 
 **Next steps**
 
-1. Train RCPG (LSTM-based) on the same standard environment as CNNTD3 baseline
-2. Read PPO and reward shaping papers
-3. Design improved reward function for CNNTD3: add exploration bonus + backtrack penalty to address Mode A
-4. Re-train improved CNNTD3 and evaluate on hard scenarios
-5. Begin comparison table: CNNTD3 vs CNNTD3-improved vs RCPG vs NeuPAN
+1. Implement curriculum learning: add U-trap scenarios to training
+   environment rotation in rl_train.py or rnn_train.py
+2. Add exploration reward bonus to penalise revisiting same positions
+3. Re-train CNNTD3 (or RCPG) with curriculum + exploration reward
+4. Evaluate improved model on all 5 hard scenarios
 
 
 **Hours spent:** 
@@ -306,6 +348,12 @@ The hypothesis is that LSTM memory resolves Mode A (dead-end / trap) but not Mod
 - [Results dead end maze](../src/dead_end_maze_results.csv)
 - [Results narrow door](../src/narrow_door_results.csv)
 - [Results s5 s2](../src/s5_s2_results.csv)
+- [RCPG hard scenario results](../src/rcpg_hard_scenario_results.csv).
+- [est script](../src/test_rcpg_hard_scenarios.py).
+
+
+
+
 
 
    
