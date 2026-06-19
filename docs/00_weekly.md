@@ -199,8 +199,7 @@ saw backtracking scenarios during training.
 - NeuPAN dependency conflicts: resolved with separate conda env
 - IR-SIM wall placement: linestring segments must be placed individually
 - CNNTD3 vs TD3 class mismatch: fixed import and state_dim (185 not 25)
-- RCPG training 15h (3× CNNTD3): ran overnight with hibernate disabled
-- RCPG script missing world_file param: fixed manually
+- RCPG training 8 (3× CNNTD3): ran overnight with hibernate disabled
 
 **Next steps**
 
