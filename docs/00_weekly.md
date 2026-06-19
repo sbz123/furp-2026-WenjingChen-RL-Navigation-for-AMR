@@ -30,6 +30,191 @@
 
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
 
+### Week 2 — 2026-06-15
+
+**Attended this week's meeting:** Yes
+
+**Progress this week**
+
+- Completed Habitat PPO PointNav baseline (SR=0.85, SPL=0.65)
+- Ran reward shaping experiments (2 variants), both underperformed baseline
+- Tested NeuPAN (TRO 2025) on 3 scenarios for comparison
+- Built 5 structured hard-scenario test environments in IR-SIM
+- Evaluated CNNTD3 (SR=92% baseline) across all 5 hard scenarios
+- Trained RCPG (GRU + TD3) and evaluated on the same 5 hard scenarios
+- Discovered GRU memory is a double-edged sword: helps precision/symmetry, hurts in concave traps
+
+---
+
+#### Part 1: Habitat PPO Baseline & Reward Shaping
+
+**Baseline training** (PPO, van-gogh-room scene):
+- update 0: success = 0.000
+- update ~650: success first appears (0.333)
+- update ~12000: success ≈ 0.85, SPL ≈ 0.65
+
+![Training curve baseline](../src/training_curve.png)
+
+Three phases observed: (1) Learning (update 0–2000): SR rises 0→0.75;
+(2) Convergence (2000–12000): stabilizes at SR~0.85, SPL~0.65;
+(3) Fluctuation: caused by scene switching, not training failure.
+
+**Reward shaping experiments**
+
+| Experiment | Penalty | Result |
+|---|---|---|
+| Baseline | none | SR ~0.85, SPL ~0.65, converges fast |
+| Experiment 1 | −0.5 | Failed: agent stops moving entirely |
+| Experiment 2 | −0.1 | SR ~0.6, convergence 3× slower |
+
+![Comparison curve](../src/comparison_curve.png)
+
+Key finding: naive collision penalties hurt more than they help.
+Penalty −0.5 dominates early reward signal, preventing exploration.
+Penalty −0.1 makes agent overly cautious.
+
+**Success and failure cases**
+
+| | |
+|:---:|:---|
+| ![success_1](../src/success_1.gif) | **Success case** (SPL=0.99): Agent navigates directly to goal. |
+| ![failure_1](../src/failure_1.gif) | **Failure case** (wall-stuck): Agent faces wall, no recovery strategy. |
+
+---
+
+#### Part 2: NeuPAN Comparison
+
+NeuPAN (TRO 2025): model-based neural planner using MPC optimization.
+
+| Scenario | Result | Notes |
+|---|---|---|
+| corridor (static) | ✅ Success | Smooth path, 0.083ms/step |
+| dyna_obs (dynamic) | ❌ Failed | MPC horizon insufficient |
+| non_obs (non-convex) | ✅ Success | Handles irregular shapes |
+
+| | |
+|:---:|:---|
+| ![neupan_corridor](../src/corridor_diff_ani.gif) | Corridor: smooth real-time path adjustment |
+| ![neupan_dyna_obs](../src/dyna_obs_diff_ani.gif) | Dynamic obstacles: collision due to fast movement |
+
+---
+
+#### Part 3: CNNTD3 Hard Scenario Benchmark
+
+Trained CNNTD3 checkpoint: CNN + TD3, state_dim=185, 180-beam LiDAR.
+Training: 60 epochs × 70 episodes, 3h on RTX 5060. Baseline SR=92%.
+
+5 structured hard scenarios designed and tested:
+
+| Scenario | SR | CR | TR | Failure Mode |
+|---|---|---|---|---|
+| S1 U-trap | **0%** | 0% | 100% | Freeze/oscillate inside U |
+| S2 Double-U (facing up/left) | **33%** | 0% | 67% | Enters U, cannot exit |
+| S3 Narrow door (0.45m) | **5%** | 95% | 0% | Collision at doorframe |
+| S4 Dead-end maze | **67%** | 0% | 33% | Enters dead-end, timeout |
+| S5 Symmetric corridor (facing left) | **0%** | 0% | 100% | Symmetric LiDAR deadlock |
+
+Two core failure modes identified:
+
+**Mode A — Concave trap (S1, S2, S4):** Goal signal points through wall;
+reactive policy cannot generate backtrack behavior.
+
+**Mode B — Symmetric deadlock (S5):** Identical upper/lower LiDAR readings
+produce near-zero angular velocity; deterministic policy cannot break symmetry.
+
+Narrow door threshold: SR=100% when width ≥ 0.6m (1.5× robot diameter),
+SR≈0% when width < 0.5m.
+
+---
+
+#### Part 4: RCPG Training & Hard Scenario Comparison
+
+Trained RCPG (GRU + TD3) on the same standard environment.
+Training: 60 epochs × 70 episodes, ~15h on RTX 5060. Baseline SR=88%.
+
+![TensorBoard eval comparison](../src/Screenshot from 2026-06-19 12-34-07.png).
+
+TensorBoard eval curves: CNNTD3 (pink) converges faster (~epoch 5–10),
+RCPG (green) converges later (~epoch 25) but reaches comparable SR.
+
+![TensorBoard train comparison](../src/Screenshot from 2026-06-19 12-34-13.png)
+
+Training curves: both models converge to similar avg_Q values (~105–110),
+but RCPG has higher train/loss due to GRU sequential computation overhead.
+
+![TensorBoard loss comparison](../src/Screenshot from 2026-06-19 12-34-17.png)
+
+**RCPG vs CNNTD3 on hard scenarios:**
+
+| Scenario | CNNTD3 SR | RCPG SR | Δ | Interpretation |
+|---|---|---|---|---|
+| S1 U-trap | 0% | 0% | 0 | Both fail: neither can backtrack |
+| S2 Double-U | 33% | 0% | **−33%** | GRU increases path persistence |
+| S3 Narrow door | 4.8% | 90.5% | **+85.7%** | GRU enables precise alignment |
+| S4 Dead-end maze | 67% | 0% | **−67%** | GRU prevents course correction |
+| S5 Symmetric corridor | 83% | 100% | **+17%** | GRU breaks symmetric deadlock |
+
+**Key finding: GRU memory is a double-edged sword.**
+GRU improves precision (+85.7% narrow door) and breaks symmetry (+17%),
+but actively hurts concave trap performance (−33% to −67%).
+The GRU makes the agent more persistent in its trajectory — helpful
+when correct, harmful when entering a dead-end.
+
+**Root cause:** The U-trap failure (SR=0% for both) is a training
+distribution problem, not an architecture problem. Neither model
+saw backtracking scenarios during training.
+
+---
+
+#### Part 5: Literature Review — Local Minima Escape (2024–2026)
+
+| Method | Paper | Limitation |
+|---|---|---|
+| APF + wall-following | Kim et al. 2024 | Requires manual trap detector |
+| Reward shaping + map | Miranda et al. 2024 (IEEE TIE) | Needs map, violates mapless |
+| Spatial recurrent unit | SRU, 2025 | Full architecture redesign |
+| Environment prediction | DreamFlow, 2026 | Requires generative model |
+| Interaction bias analysis | Jain et al. 2026 | Analysis only, no solution |
+
+---
+
+**Challenges & blockers**
+
+- PyTorch 2.6 checkpoint incompatibility: fixed with weights_only=False
+- Collision penalty −0.5 killed learning: documented as failed experiment
+- NeuPAN dependency conflicts: resolved with separate conda env
+- IR-SIM wall placement: linestring segments must be placed individually
+- CNNTD3 vs TD3 class mismatch: fixed import and state_dim (185 not 25)
+- RCPG training 15h (3× CNNTD3): ran overnight with hibernate disabled
+- RCPG script missing world_file param: fixed manually
+
+**Next steps**
+
+1. Implement curriculum learning: add U-trap to training rotation
+2. Add exploration reward to penalise revisiting same positions
+3. Re-train with curriculum + exploration reward
+4. Evaluate improved model on all 5 hard scenarios
+
+**Hours spent:** 
+
+**Links:**
+- [Training curve](../src/training_curve.png)
+- [Comparison curve](../src/comparison_curve.png)
+- [TensorBoard eval](../src/tensorboard_eval.png)
+- [TensorBoard train](../src/tensorboard_train.png)
+- [TensorBoard loss](../src/tensorboard_loss.png)
+- Success cases: [SPL=0.99](../src/success_1.gif), [SPL=0.96](../src/success_2.gif), [SPL=0.98](../src/success_3.gif)
+- Failure cases: [wall-stuck](../src/failure_1.gif), [far goal](../src/failure_2.gif), [terminated](../src/failure_3.gif)
+- NeuPAN: [corridor](../src/corridor_diff_ani.gif), [dynamic](../src/dyna_obs_diff_ani.gif), [non-convex](../src/non_obs_diff_ani.gif)
+- Hard scenario scripts: [u-trap](../src/test_u_trap_cnntd3.py), [maze](../src/test_dead_end_maze.py), [narrow-door](../src/test_narrow_door.py), [s5-s2](../src/test_s5_s2.py), [rcpg-all](../src/test_rcpg_hard_scenarios.py)
+- World files: [u-trap](../src/u_trap_world.yaml), [maze](../src/dead_end_maze_world.yaml), [narrow-door](../src/narrow_door_world.yaml), [corridor](../src/symmetric_corridor_world.yaml), [double-u](../src/double_u_world.yaml)
+- Results: [u-trap](../src/u_trap_results.csv), [maze](../src/dead_end_maze_results.csv), [narrow-door](../src/narrow_door_results.csv), [s5-s2](../src/s5_s2_results.csv), [rcpg-all](../src/rcpg_hard_scenario_results.csv)
+
+
+
+
+
+
 
 ### Week 2 — 2026-06-15
 
