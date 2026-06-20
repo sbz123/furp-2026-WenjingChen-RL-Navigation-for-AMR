@@ -52,4 +52,5 @@
 ****
 
 ![environment](/src/environment.png)
-[smoke test](../src/smoke_test.sh),
+
+[smoke test](/src/smoke_test.sh)
