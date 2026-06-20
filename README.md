@@ -50,6 +50,6 @@
 | GPU detection | ✅ Pass | NVIDIA RTX 5060 Laptop GPU, 8151 MiB, driver 595.71.05 |
 | NeuPAN environment | ✅ Pass | neupan conda env functional |
 ****
-![environment](../src/environment.png)
-![environment](../src/environment.png)
+
+![environment](/src/environment.png)
 [smoke test](../src/smoke_test.sh),
