@@ -29,6 +29,119 @@
 ---
 
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
+### Week 3 — 2026-06-22
+
+**Attended this week's meeting:** 
+
+**Progress this week**
+
+- Trained CNNTD3_improved (curriculum learning + exploration reward), 60 epochs, ~2.3h
+- Trained CNNTD3_curriculum_only (ablation: curriculum learning without exploration reward), 60 epochs, ~2.4h
+- Evaluated both on 4 hard scenarios (S1, S2, S3, S5; dropped S4 due to scene design issues)
+- Completed ablation study separating contributions of curriculum learning vs exploration reward
+- TensorBoard 4-way comparison across all trained models
+
+---
+
+#### Part 1: Ablation Study Results
+
+Four models tested on 4 structured hard scenarios:
+
+| Scenario | CNNTD3 | RCPG (GRU) | Curriculum Only | CL + Exploration |
+|---|---|---|---|---|
+| **Standard env (baseline)** | **92%** | 88% | ~81% | ~78% |
+| S1 U-trap | 0% | 0% | 0% | **100%** |
+| S2 Double-U | 33% | 0% | **67%** | 33% |
+| S3 Narrow door (0.45m) | 4.8% | **90.5%** | 9.5% | 0% |
+| S5 Symmetric corridor | 83% | **100%** | **100%** | **100%** |
+
+**Key ablation findings:**
+
+1. **Exploration reward is the critical factor for U-trap escape.**
+   Curriculum learning alone (S1 SR=0%) does not solve the U-trap.
+   Adding exploration reward on top of curriculum learning pushes S1 to 100%.
+   The exploration bonus teaches the agent "don't stay in one place" —
+   exactly the missing behavior for escaping concave traps.
+
+2. **Curriculum learning alone improves Double-U (33%→67%) and symmetric corridor (83%→100%).**
+   Exposure to U-shaped structures during training helps even without exploration reward.
+
+3. **Trade-off: hard-scenario improvements come at the cost of standard-environment SR.**
+   Standard environment drops from 92% to ~78–81% with curriculum training.
+   This is expected: training time is split between standard and hard scenarios.
+
+4. **No single method dominates all scenarios.**
+   RCPG excels at narrow doors (90.5%) but fails at traps (0%).
+   CL+Exploration excels at U-trap (100%) but fails at narrow doors (0%).
+   This confirms the need for scenario-specific solutions or a combined approach.
+
+---
+
+#### Part 2: TensorBoard Training Comparison
+
+![TensorBoard 4-way eval](../src/tensorboard_4way_eval.png)
+
+eval/avg_goal: CNNTD3 (pink) converges highest (~0.92), RCPG (green) reaches ~0.88,
+curriculum_only (blue) reaches ~0.81, improved (red) reaches ~0.78.
+Both curriculum variants show more training instability due to environment switching.
+
+![TensorBoard 4-way train](../src/tensorboard_4way_train.png)
+
+train/avg_Q: curriculum variants (red, blue) have lower avg_Q (~20–40) than
+CNNTD3/RCPG (~65–70), reflecting the harder training distribution.
+train/loss: curriculum variants show higher and more variable loss,
+consistent with the mixed-difficulty training regime.
+
+---
+
+#### Part 3: Analysis — Why Standard SR Drops
+
+The standard-environment SR drop (92%→78%) has three causes:
+
+1. **Training budget dilution**: 50% of later episodes use hard scenarios,
+   reducing standard-environment training data by half.
+2. **Exploration reward side effects**: the anti-stagnation penalty
+   makes the agent more aggressive, increasing collision rate
+   in standard environments (avg_col 0.08→0.22).
+3. **Reward distribution shift**: hard scenarios produce different
+   reward distributions, making the critic's value estimates noisier.
+
+Potential fix (future work): increase total training epochs proportionally,
+or use separate replay buffers for standard and hard experiences.
+
+---
+
+**Challenges & blockers**
+
+- Computer shut down during overnight training, lost partial progress.
+  Resolved by restarting from scratch (no checkpoint resume support in current codebase).
+- Exploration reward parameters (bonus=0.3, penalty=-0.2, stall threshold=15)
+  were set manually without systematic tuning. Better results likely achievable
+  with hyperparameter search.
+- S4 dead-end maze scene design too restrictive (corridors too narrow for any model);
+  dropped from final evaluation.
+
+**Next steps**
+
+1. Read related papers for positioning:
+   - "Pushing the Limits of Reactive Planning" (2024) — LSTM + FFN 2-stage training
+   - Kim et al. 2024 — APF + wall-following hybrid
+   - DreamFlow (2026) — environment prediction for local minima escape
+2. Design generalization test: create new U-trap variants not seen during training
+3. Consider increasing training budget (more epochs) to recover standard-env SR
+
+
+**Hours spent:** 
+
+**Links:**
+- Training logs: `cnntd3_improved_train.log`, `curriculum_only_train.log`
+- Test results: `improved_hard_scenario_results.csv`
+- Test scripts: `test_improved_hard_scenarios.py`, `test_curriculum_only.py`
+- TensorBoard: `runs/Jun22_*CNNTD3_improved`, `runs/Jun23_*curriculum_only`
+
+
+
+
 
 ### Week 2 — 2026-06-15
 
