@@ -120,6 +120,7 @@ or use separate replay buffers for standard and hard experiences.
   with hyperparameter search.
 - S4 dead-end maze scene design too restrictive (corridors too narrow for any model);
   dropped from final evaluation.
+- The debugging effect was not good.
 
 **Next steps**
 
