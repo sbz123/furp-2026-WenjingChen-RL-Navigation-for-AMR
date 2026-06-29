@@ -29,9 +29,55 @@
 ---
 
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
+### Week 4 — 2026-06-29
+
+**Attended this week's meeting:** Yes
+
+**Progress this week**
+- 安装真机
+- 训练CNNTD3_v3：降低探索奖励幅度，扩展至100个历时以实现稳定收敛
+
+
+**Challenges & blockers**
+- 模型只是在特定场景表现优秀但是总体不稳定而且sr没有原本的高
+
+**Next steps**
+
+
+**Hours spent:** 
+
+**Links:**
+- Eval script: `eval_fair.py`
+- Deployment node: `turtlebot3_rl_deploy/scripts/rl_navigation_node.py`
+- Training script: `robot_nav/rl_train_v3.py`
+- Figures: `fig1_sr_comparison.pdf`, `fig2_heatmap.pdf`, `fig3_std_speed.pdf`
+- Paper draft: `introduction.tex`, `references.bib`
+- Training log: `train_v3.log`
+
+
+
+### Week 4 — 2026.6.29
+
+**Attended this week's meeting:** Yes 
+
+**Progress this week**
+- 安装真机
+- 
+
+**Challenges & blockers**
+- _What got in the way? What are you stuck on?_
+
+**Next steps**
+- _What will you do next week?_
+
+**Hours spent (optional):** _e.g. 6h_
+
+**Links (optional):** _commits, notebooks, docs, datasets..._
+
+---
 ### Week 3 — 2026-06-22
 
-**Attended this week's meeting:** 
+**Attended this week's meeting:** Yes
 
 **Progress this week**
 
