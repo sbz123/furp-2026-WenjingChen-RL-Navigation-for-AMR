@@ -60,24 +60,6 @@
 **Links:**
 
 
-### Week 4 — 2026.6.29
-
-**Attended this week's meeting:** Yes 
-
-**Progress this week**
-- 安装真机
-- 
-
-**Challenges & blockers**
-- _What got in the way? What are you stuck on?_
-
-**Next steps**
-- _What will you do next week?_
-
-**Hours spent (optional):** _e.g. 6h_
-
-**Links (optional):** _commits, notebooks, docs, datasets..._
-
 ---
 ### Week 3 — 2026-06-22
 
