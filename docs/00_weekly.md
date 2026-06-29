@@ -34,26 +34,30 @@
 **Attended this week's meeting:** Yes
 
 **Progress this week**
-- 安装真机
-- 训练CNNTD3_v3：降低探索奖励幅度，扩展至100个历时以实现稳定收敛
-
+- Trained CNNTD3_v3: conservative curriculum (max 20%), 100 epochs;
+  standard SR≈70-80%, less stable than improved
+- Trained ATD3 (Attention-TD3): replaced CNN with Multi-head
+  Self-Attention, 100-point LiDAR, 10m range; SR≈0% — abandoned
+- Trained CNNTD3_v4_improved: distance shaping reward + 120 epochs +
+  best checkpoint saving; currently training
+- Retrained NeuPAN DUNE model for TurtleBot3 Burger (0.178×0.138m);
+  currently training (epoch 5000)
 
 **Challenges & blockers**
-- 模型只是在特定场景表现优秀但是总体不稳定而且sr没有原本的高
+- ATD3 (Attention architecture) failed to converge (SR≈0%):
+  likely due to 20×20 world too large, target beyond LiDAR range
+- NeuPAN in custom corridor scene stuck due to vel_min constraint
+  (does not allow reverse motion for small robot)
+- CNNTD3_v3 less stable than CNNTD3_improved in standard environment
 
 **Next steps**
 
+- Evaluate CNNTD3_v4_improved on all hard scenarios after training
+- Test NeuPAN with retrained DUNE model on standard benchmark
 
 **Hours spent:** 
 
 **Links:**
-- Eval script: `eval_fair.py`
-- Deployment node: `turtlebot3_rl_deploy/scripts/rl_navigation_node.py`
-- Training script: `robot_nav/rl_train_v3.py`
-- Figures: `fig1_sr_comparison.pdf`, `fig2_heatmap.pdf`, `fig3_std_speed.pdf`
-- Paper draft: `introduction.tex`, `references.bib`
-- Training log: `train_v3.log`
-
 
 
 ### Week 4 — 2026.6.29
