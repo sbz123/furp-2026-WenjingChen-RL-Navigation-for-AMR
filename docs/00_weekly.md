@@ -59,16 +59,6 @@
 
 ![Evaluation Results](../src/evaluate.png)
 
-| Model | Generalization (20 random) | S1 U-trap | S2 Double-U | S3 Narrow-door | S5 Corridor |
-|---|---|---|---|---|---|
-| CNNTD3 (baseline) | 85% | 0% | 100% | 100% | 100% |
-| CNNTD3_v2 | **90%** | 0% | 100% | 100% | 100% |
-| CNNTD3_improved | 80% | **100%** | 100% | 0% | 100% |
-| CNNTD3_v3 | 75% | 0% | 75% | 100% | 83% |
-| CNNTD3_v4_improved | 75% | 0% | 75% | 100% | 100% |
-| CNNTD3_curriculum_only | 60% | 0% | 100% | 8% | 100% |
-| RCPG | pending | pending | pending | pending | pending |
-
 **Challenges & blockers**
 
 - ATD3 (Attention architecture) failed to converge (SR≈0%):
