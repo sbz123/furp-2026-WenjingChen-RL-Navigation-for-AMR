@@ -56,7 +56,7 @@
   targeting both high generalization and U-trap success
 
 **Final Evaluation Results (independent test, not training eval)**
-
+![Evaluation Results](../src/evaluate.png)
 | Model | Generalization (20 random) | S1 U-trap | S2 Double-U | S3 Narrow-door | S5 Corridor |
 |---|---|---|---|---|---|
 | CNNTD3 (baseline) | 85% | 0% | 100% | 100% | 100% |
