@@ -29,36 +29,73 @@
 ---
 
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
-### Week 4 — 2026-06-29
+### Week 4 — 2026-06-29 / 06-30
 
 **Attended this week's meeting:** Yes
 
 **Progress this week**
+
 - Trained CNNTD3_v3: conservative curriculum (max 20%), 100 epochs;
   standard SR≈70-80%, less stable than improved
 - Trained ATD3 (Attention-TD3): replaced CNN with Multi-head
   Self-Attention, 100-point LiDAR, 10m range; SR≈0% — abandoned
 - Trained CNNTD3_v4_improved: distance shaping reward + 120 epochs +
-  best checkpoint saving; currently training
-- Retrained NeuPAN DUNE model for TurtleBot3 Burger (0.178×0.138m);
-  currently training (epoch 5000)
+  best checkpoint saving; SR=75%, no improvement over baseline
+- Attempted NeuPAN DUNE retraining for TurtleBot3 Burger size — training
+  did not persist (process lost), need to rerun
+- Ran systematic final evaluation across all trained CNNTD3 variants:
+  20 generalization trials + 4 hard scenarios (S1 U-trap, S2 Double-U,
+  S3 Narrow-door, S5 Corridor), 3 reps per orientation each
+- Discovered CNNTD3_v2 has best generalization SR (90%), exceeding both
+  baseline (85%) and improved (80%) — exploration reward strength of
+  0.15 (between improved's 0.3 and v3's 0.1) appears to be a sweet spot
+- Confirmed CNNTD3_improved is the ONLY model achieving 100% SR on
+  U-trap; all other variants (v2, v3, v4, curriculum_only) score 0%
+- Designed CNNTD3_v5_combined: combines v2's moderate exploration
+  reward (0.15) with improved's earlier curriculum start (epoch 10),
+  targeting both high generalization and U-trap success
+
+**Final Evaluation Results (independent test, not training eval)**
+
+| Model | Generalization (20 random) | S1 U-trap | S2 Double-U | S3 Narrow-door | S5 Corridor |
+|---|---|---|---|---|---|
+| CNNTD3 (baseline) | 85% | 0% | 100% | 100% | 100% |
+| CNNTD3_v2 | **90%** | 0% | 100% | 100% | 100% |
+| CNNTD3_improved | 80% | **100%** | 100% | 0% | 100% |
+| CNNTD3_v3 | 75% | 0% | 75% | 100% | 83% |
+| CNNTD3_v4_improved | 75% | 0% | 75% | 100% | 100% |
+| CNNTD3_curriculum_only | 60% | 0% | 100% | 8% | 100% |
+| RCPG | pending | pending | pending | pending | pending |
 
 **Challenges & blockers**
+
 - ATD3 (Attention architecture) failed to converge (SR≈0%):
   likely due to 20×20 world too large, target beyond LiDAR range
 - NeuPAN in custom corridor scene stuck due to vel_min constraint
   (does not allow reverse motion for small robot)
-- CNNTD3_v3 less stable than CNNTD3_improved in standard environment
+- X11 display connection limit reached during long evaluation runs
+  (476+ SIM instances created); fixed by reusing SIM instance across
+  episodes within each test phase instead of creating new instances
+- Accidentally deleted robot_nav/runs/ directory (TensorBoard training
+  curves for v3/v4/ATD3 lost); final SR numbers unaffected since they
+  come from saved model checkpoints, not TensorBoard logs
 
 **Next steps**
 
-- Evaluate CNNTD3_v4_improved on all hard scenarios after training
-- Test NeuPAN with retrained DUNE model on standard benchmark
+- Run final evaluation for RCPG (in progress)
+- Train CNNTD3_v5_combined with merged hyperparameters
+- Rerun NeuPAN DUNE training for small robot (lost due to process issue)
+
 
 **Hours spent:** 
 
 **Links:**
-
+- Final evaluate script: `final_evaluate_all.py`
+- Final results: `final_evaluate_results.json` (in progress)
+- New training script: `robot_nav/rl_train_v5_combined.py`
+- TensorBoard (cleaned): `runs/` (8 key models retained)
+- Training logs: `train_v3.log`, `train_v4_improved.log`, `final_eval.log`
+- Deployment node: `turtlebot3_rl_deploy/scripts/rl_navigation_node.py`
 
 ---
 ### Week 3 — 2026-06-22
