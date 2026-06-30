@@ -35,48 +35,37 @@
 
 **Progress this week**
 
-- Trained CNNTD3_v3: conservative curriculum (max 20%), 100 epochs;
-  standard SR≈70-80%, less stable than improved
-- Trained ATD3 (Attention-TD3): replaced CNN with Multi-head
-  Self-Attention, 100-point LiDAR, 10m range; SR≈0% — abandoned
-- Trained CNNTD3_v4_improved: distance shaping reward + 120 epochs +
-  best checkpoint saving; SR=75%, no improvement over baseline
-- Attempted NeuPAN DUNE retraining for TurtleBot3 Burger size — training
-  did not persist (process lost), need to rerun
-- Ran systematic final evaluation across all trained CNNTD3 variants:
-  20 generalization trials + 4 hard scenarios (S1 U-trap, S2 Double-U,
-  S3 Narrow-door, S5 Corridor), 3 reps per orientation each
-- Discovered CNNTD3_v2 has best generalization SR (90%), exceeding both
-  baseline (85%) and improved (80%) — exploration reward strength of
-  0.15 (between improved's 0.3 and v3's 0.1) appears to be a sweet spot
-- Confirmed CNNTD3_improved is the ONLY model achieving 100% SR on
-  U-trap; all other variants (v2, v3, v4, curriculum_only) score 0%
-- Designed CNNTD3_v5_combined: combines v2's moderate exploration
-  reward (0.15) with improved's earlier curriculum start (epoch 10),
-  targeting both high generalization and U-trap success
-
+- 培训CNNTD3_v3：保守课程（最高20%），涵盖100个时代;标准SR≈70-80%，稳定性不及改进版
+- 训练ATD3（Attention-TD3）：用多头替代CNN自我关注，100点激光雷达，10米射程;SR≈0% — 已废弃
+- 训练CNNTD3_v4_improved：距离塑形奖励 + 120 个时代 + 最佳存档点;SR=75%，与基线无改善
+- 尝试在NeuPAN DUNE重新训练TurtleBot3汉堡大小，发现neupan重新训练过后办法通过Corridor navigation
+- 对所有已训练的CNNTD3变体进行系统性最终评估：
+  20个概括试验+4个困难场景（S1 U型陷阱，S2 双U型，
+  S3窄门，S5走廊），每个方向各3次
+- 发现CNNTD3_v2具有最佳推广SR（90%），超过两者
+  基线（85%）和改善（80%）——探索奖励强度为
+  0.15（介于改进版0.3和v3的0.1之间）似乎是一个最佳平衡点
+- 确认CNNTD3_improved是唯一实现100% SR的型号
+  U型弯;其他所有变体（v2、v3、v4、curriculum_only）得分为0%
+- 设计CNNTD3_v5_combined：结合了v2的适度探索
+  改进版早期课程起始（第10纪元）的奖励（0.15），
+  既针对高泛化，也针对U型陷阱成功率
 **Final Evaluation Results (independent test, not training eval)**
 
 ![Evaluation Results](../src/evaluate.png)
 
 **Challenges & blockers**
 
-- ATD3 (Attention architecture) failed to converge (SR≈0%):
-  likely due to 20×20 world too large, target beyond LiDAR range
-- NeuPAN in custom corridor scene stuck due to vel_min constraint
-  (does not allow reverse motion for small robot)
-- X11 display connection limit reached during long evaluation runs
-  (476+ SIM instances created); fixed by reusing SIM instance across
-  episodes within each test phase instead of creating new instances
-- Accidentally deleted robot_nav/runs/ directory (TensorBoard training
-  curves for v3/v4/ATD3 lost); final SR numbers unaffected since they
-  come from saved model checkpoints, not TensorBoard logs
+- ATD3未能收敛且sr极低：可能是因为20×20世界过大，目标超出激光雷达范围
+- 由于vel_min约束，NeuPAN 在自定义走廊场景中卡住（不支持小型机器人的反向运动）
+- 在长时间评估运行中达到的X11显示连接限制（创建476+ SIM实例）;通过重复使用SIM实例解决了这个问题
+  在每个测试阶段内设置剧集，而不是创建新实例
+- 意外删除了robot_nav/runs/目录（TensorBoard训练）
+  v3/v4/ATD3曲线丢失）;最终SR号码不受影响，因为他们
+  来自保存的模型检查点，而非TensorBoard日志
+- IR-SIM崩溃，导致v5训练崩溃：IR-SIM 内部维护一棵空间索引树，用于快速查询激光雷达可能碰到的障碍物。object_tree.query() 返回的是索引编号，但这棵树是在场景    初始化时建立的，如果场景里的物体数量在运行过程中发生了变化，重建 SIM() 实例后，树和实际物体列表短暂不同步，导致查询返回的索引超出了新场景的物体数量范围。
 
 **Next steps**
-
-- Run final evaluation for RCPG (in progress)
-- Train CNNTD3_v5_combined with merged hyperparameters
-- Rerun NeuPAN DUNE training for small robot (lost due to process issue)
 
 
 **Hours spent:** 
