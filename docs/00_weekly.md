@@ -45,9 +45,9 @@
   训练CNNTD3_v2_continue_v2：从现有的v2检查点加载，继续运行40个epoch,SR并没有很高，失败
 - 设计CNNTD3_v5_combined：结合了v2的适度探索改进版早期课程起始的奖励（0.15），既针对高泛化，也针对U型陷阱，U型陷阱效果比较好，泛化性较弱
 - 方向混乱，论文看的不够，又回去看论文了
-- https://arxiv.org/abs/2403.06828（neupan原始论文）
-- https://arxiv.org/pdf/2512.09537（REASAN腿足RL避障）
-- https://arxiv.org/pdf/2512.16760（VLA for Autonomous Driving）
+- https://arxiv.org/abs/2403.06828   （neupan原始论文）
+- https://arxiv.org/pdf/2512.09537  （REASAN腿足RL避障）
+- https://arxiv.org/pdf/2512.16760  （VLA for Autonomous Driving）
   
 **Final Evaluation Results (independent test, not training eval)**
 
