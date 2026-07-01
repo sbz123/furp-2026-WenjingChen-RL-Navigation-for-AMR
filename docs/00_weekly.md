@@ -29,6 +29,7 @@
 ---
 
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
+
 ### Week 4 — 2026-06-29 / 06-30
 
 **Attended this week's meeting:** Yes
@@ -38,45 +39,32 @@
 - 培训CNNTD3_v3：保守课程（最高20%），涵盖100个时代;标准SR≈70-80%，稳定性不及改进版
 - 训练ATD3（Attention-TD3）：用多头替代CNN自我关注，100点激光雷达，10米射程;SR≈0% — 已废弃
 - 训练CNNTD3_v4_improved：距离塑形奖励 + 120 个时代 + 最佳存档点;SR=75%，与基线无改善
-- 尝试在NeuPAN DUNE重新训练TurtleBot3汉堡大小，发现neupan重新训练过后办法通过Corridor navigation
-- 对所有已训练的CNNTD3变体进行系统性最终评估：
-  20个概括试验+4个困难场景（S1 U型陷阱，S2 双U型，
-  S3窄门，S5走廊），每个方向各3次
-- 发现CNNTD3_v2具有最佳推广SR（90%），超过两者
-  基线（85%）和改善（80%）——探索奖励强度为
-  0.15（介于改进版0.3和v3的0.1之间）似乎是一个最佳平衡点
-- 确认CNNTD3_improved是唯一实现100% SR的型号
-  U型弯;其他所有变体（v2、v3、v4、curriculum_only）得分为0%
-- 设计CNNTD3_v5_combined：结合了v2的适度探索
-  改进版早期课程起始（第10纪元）的奖励（0.15），
-  既针对高泛化，也针对U型陷阱成功率
+- 尝试在NeuPAN DUNE重新训练TurtleBot3汉堡大小，发现neupan重新训练过后没办法通过Corridor navigation（可能还需要继续调整）
+- 对所有已训练的CNNTD3变体进行系统性最终评估：20个概括试验+4个困难场景（S1 U型陷阱，S2 双U型，S3窄门，S5走廊），每个方向各3次
+- 发现CNNTD3_v2具有最佳推广SR（90%），超过两者基线（85%）和改善（80%）——探索奖励强度为0.15（介于改进版0.3和v3的0.1之间）似乎是一个最佳平衡点
+  训练CNNTD3_v2_continue_v2：从现有的v2检查点加载，继续运行40个epoch,SR并没有很高，失败
+- 设计CNNTD3_v5_combined：结合了v2的适度探索改进版早期课程起始的奖励（0.15），既针对高泛化，也针对U型陷阱，U型陷阱效果比较好，泛化性较弱
+- 方向混乱，论文看的不够，又回去看论文了https://arxiv.org/abs/2403.06828（neupan原始论文）https://arxiv.org/pdf/2512.09537（REASAN腿足RL避障）https://arxiv.org/pdf/2512.16760（VLA for Autonomous Driving）
+  
 **Final Evaluation Results (independent test, not training eval)**
 
 ![Evaluation Results](../src/evaluate.png)
 
 **Challenges & blockers**
-
 - ATD3未能收敛且sr极低：可能是因为20×20世界过大，目标超出激光雷达范围
-- 由于vel_min约束，NeuPAN 在自定义走廊场景中卡住（不支持小型机器人的反向运动）
-- 在长时间评估运行中达到的X11显示连接限制（创建476+ SIM实例）;通过重复使用SIM实例解决了这个问题
-  在每个测试阶段内设置剧集，而不是创建新实例
-- 意外删除了robot_nav/runs/目录（TensorBoard训练）
-  v3/v4/ATD3曲线丢失）;最终SR号码不受影响，因为他们
-  来自保存的模型检查点，而非TensorBoard日志
-- IR-SIM崩溃，导致v5训练崩溃：IR-SIM 内部维护一棵空间索引树，用于快速查询激光雷达可能碰到的障碍物。object_tree.query() 返回的是索引编号，但这棵树是在场景    初始化时建立的，如果场景里的物体数量在运行过程中发生了变化，重建 SIM() 实例后，树和实际物体列表短暂不同步，导致查询返回的索引超出了新场景的物体数量范围。
+- 在长时间评估运行中达到的X11显示连接限制（创建476+ SIM实例）;通过重复使用SIM实例解决了这个问题，在每个测试阶段内设置剧集，而不是创建新实例
+- 意外删除了robot_nav/runs/（v3/v4/ATD3曲线丢失）但模型还在
+- IR-SIM崩溃，导致v5训练崩溃：IR-SIM 内部维护一棵空间索引树，用于快速查询激光雷达可能碰到的障碍物。object_tree.query() 返回的是索引编号，但这棵树是在场景    初始化时建立的，如果场景里的物体数量在运行过程中发生了变化，重建 SIM() 实例后，树和实际物   体列表短暂不同步，导致查询返回的索引超出了新场景的物体数量范围。
+
 
 **Next steps**
-
+-继续微调训练模型
+-多看看论文，看更多的方向，和基础方法，微调效果比较差，loss比较大
+-
 
 **Hours spent:** 
 
 **Links:**
-- Final evaluate script: `final_evaluate_all.py`
-- Final results: `final_evaluate_results.json` (in progress)
-- New training script: `robot_nav/rl_train_v5_combined.py`
-- TensorBoard (cleaned): `runs/` (8 key models retained)
-- Training logs: `train_v3.log`, `train_v4_improved.log`, `final_eval.log`
-- Deployment node: `turtlebot3_rl_deploy/scripts/rl_navigation_node.py`
 
 ---
 ### Week 3 — 2026-06-22
