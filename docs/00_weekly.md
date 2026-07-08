@@ -47,7 +47,9 @@
 在NeuPAN控制循环中加入action buffer队列，planner计算出的动作延迟d步后才执行。
 但是action delay（加在planner→执行器之间）不符合真实场景，真实延迟应该在observation→agent之间。
 
----
+ ![neupan_delay_500ms](../src/animation/neupan_delay_500ms.gif)  
+
+--- 
 
 #### 实验二：Action Chunking × 两种延迟类型
 
@@ -104,7 +106,6 @@ predicted_theta = delayed_theta + Σ(w_i * dt)
 1. 固定延迟步数 → 预测器知道精确推演多少步，不会出错
 2. 仿真运动学模型完美匹配 → 预测无误差
 3. 静态环境 → 延迟的LiDAR和当前LiDAR完全一样
-
 
 
 ---
@@ -176,15 +177,15 @@ L1效果递进清晰：
 
 | 脚本 | 功能 |
 |------|------|
-| test_neupan_delay_vis.py | 最初版：action delay + 可视化 |
-| test_neupan_delay_fin.py | 多延迟模式（action/observation/inference） |
-| test_neupan_unified.py | inference延迟 × action chunking 4组对比 |
-| test_neupan_obs_delay.py | 观测延迟 × action chunking 4组对比 |
-| test_neupan_compensate.py | 观测延迟 + 运动学补偿 5组对比（固定步数） |
-| test_neupan_ms_delay.py | 毫秒级随机延迟 + 运动学补偿 |
-| test_neupan_chunk.py | 纯Action Chunking测试 |
-| test_neupan_L1.py | L1完整补偿（自身状态+障碍物外推）4组对比 |
-| test_neupan_dynamic.py | 动态场景延迟测试 |
+| [test_neupan_delay_vis.py](../src/test_neupan/test_neupan_delay_vis.py) | 最初版：action delay + 可视化 |
+| [test_neupan_delay_fin.py](../src/test_neupan/test_neupan_delay_fin.py) | 多延迟模式（action/observation/inference） |
+| [test_neupan_unified.py](../src/test_neupan/test_neupan_unified.py)  | inference延迟 × action chunking 4组对比 |
+| [test_neupan_obs_delay.py](../src/test_neupan/test_neupan_obs_delay.py) | 观测延迟 × action chunking 4组对比 |
+| [test_neupan_compensate.py](../src/test_neupan/test_neupan_compensate.py) | 观测延迟 + 运动学补偿 5组对比（固定步数） |
+| [test_neupan_ms_delay.py](../src/test_neupan/test_neupan_ms_delay.py) | 毫秒级随机延迟 + 运动学补偿 |
+| [test_neupan_chunk.py](../src/test_neupan/test_neupan_chunk.py) | 纯Action Chunking测试 |
+| [test_neupan_L1.py](../src/test_neupan/test_neupan_L1.py) | L1完整补偿（自身状态+障碍物外推）4组对比 |
+| [test_neupan_dynamic.py](../src/test_neupan/test_neupan_dynamic.py)  | 动态场景延迟测试 |
 
 ---
 
