@@ -30,6 +30,69 @@
 
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
 
+### Week 6 — 2026-07-13 / 07-15
+
+**Attended this week's meeting:** Yes
+
+**Progress this week**
+
+- 通过monkey-patch替换`DUNETrain.generate_data_set`，在训练数据中注入延迟偏移（输入=偏移后的点坐标，标签=真实距离不变），训练了固定500ms和随机0-500ms两个版本。
+
+在4个测试脚本（unified / compensate / ms_delay / L1）上系统对比3种版本：
+
+| 版本 | 随机延迟下无补偿偏移 | 补偿后偏移 |
+|---|---|---|
+| 原版 | 1.63 | 0.033 |
+| 固定500ms训练 | 1.49 | 0.036 |
+| 随机延迟训练 | 1.83 | 0.039 |
+
+**结论：训练端修复无效**
+
+- 测试自身状态运动学推演 + 障碍物点云线性外推对延迟效果的影响，自身状态运动学推演对静态场景效果比较好动态场景一般，障碍物点云线性外效果在静态和动态场景下效果都不佳
+- 用卡尔曼追踪器代替障碍物点云线性外推
+
+**修复1：追踪器不更新bug**——v3中追踪器只在`d_steps==0`时更新（延迟下永远不发生），v4改为每步用延迟点云更新，需要预测时`predict_future(d_steps)`推到当前
+**修复2：静态点漂移bug**——`scan_to_point_velocity`对墙壁点也估计出非零速度，外推后墙"漂移"导致碰撞。加速度过滤（0.15-2.0 m/s）+聚类过滤（簇点数>15或跨度>2.5m的大簇跳过）
+**修复3：坐标系错位bug**——点云用`s_delay`解算但规划状态传`s_in`（补偿后），参考系不一致导致D组90%碰撞。改为用`s_in`解算点云
+
+#### 静态场景正式结果
+| 条件 | SR% | 直行段偏移 |
+|------|-----|----------|
+| 无延迟 baseline | 100 | 0.0005 |
+| 随机100-1000ms 无补偿 | 100 | **1.4929** |
+| 随机100-1000ms + 自身补偿 | 100 | **0.0004** |
+| 随机100-1000ms + 自身补偿 | 100 | **0.7821** | 
+ 
+#### 动态场景结果（v4修复版，确定性横穿场景，n=10）
+
+| 条件 | SR% | 碰撞% |
+|------|-----|-------|
+| 无延迟 baseline | 100 | 0 |
+| 有延迟 无补偿 | 10-20 | 80-90 |
+| 有延迟 + 自身补偿 | 100 | 0 |
+| 有延迟 + 自身+卡尔曼 | 100 | 0 |
+
+自身补偿已几乎恢复baseline性能。**卡尔曼在确定性横穿场景无额外收益**——球的影子和真身在同一条穿越直线上，绕哪个都安全。迎面场景（env_headon.yaml）测试待进行。
+
+**Challenges & blockers**
+- 测试试验多次效果不一致：固定random+np.random+torch.manual_seed三重种子，环境变量`OMP_NUM_THREADS=1`限制线程非确定性，SEEDS扩至30个，支持n=30的统计功效
+
+**Next steps**
+
+1. 上真机测试效果
+2. 真机A/B实验：compensate false/true各10次，rosbag录/odom轨迹，report输出的total obs-delay即论文真机延迟数字
+3. 仿真收尾：env_headon.yaml跑v4完整对比（迎面球场景，预期C不再轻松100%，卡尔曼有表现空间）
+4. 补充实验：延迟扫描曲线（0/200/400/600/800/1000ms固定延迟×3方法折线图）；静态场景D组验证卡尔曼无副作用
+
+**Hours spent:**
+
+**Links:**
+- 测试脚本：test_neupan_delay_eval_v3.py (静态), test_neupan_delay_eval_v4.py (动态+卡尔曼)
+- 场景文件：env_turn_simple.yaml (静态), env_turn_fast_dynamic.yaml (动态), env_headon.yaml (迎面球)
+- DUNE训练：dune_train_delay.py, 模型路径 ~/NeuPAN/model/diff_robot_delay500ms_{fixed,rand}/
+- 真机节点：dc_neupan_node.py + robot.yaml + planner.yaml（已交付，待Burger DUNE验证后部署）
+- 数据归档：~/paper_data/{raw_json, frozen_v1}
+
 
 ### Week 5 — 2026-07-06 / 07-07
 
