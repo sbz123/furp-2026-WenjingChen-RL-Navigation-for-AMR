@@ -77,9 +77,16 @@
 **Challenges & blockers**
 - 测试试验多次效果不一致：固定random+np.random+torch.manual_seed三重种子，环境变量`OMP_NUM_THREADS=1`限制线程非确定性，SEEDS扩至30个，支持n=30的统计功效
 
+- 上真机了，基于官方neupan_ros2节点添加延迟补偿逻辑（`_predict_future_state` + 指令下发周期对齐）
+- 效果不佳，然后发现我们连neupan的效果都没展现出来
+
+#### 发现的问题（真机未达到可用状态）
+1. **蛇形轨迹**：planner配置使用LIMO参数（ref_speed=1.2, max_speed=[1.2,1.5]）跑在Burger上（物理上限0.22m/s），MPC模型内速度是真实的5倍以上→规划与执行严重失配→蛇形震荡。降低control_frequency无法解决，因为根因是速度失配不是延迟
+2. **障碍物前停住**：DUNE模型尺寸(0.322×0.22m)比Burger(0.138×0.178m)大一倍多，加上d_max=0.25m→安全包络过大→提前停车
+
 **Next steps**
 
-1. 上真机测试效果
+1. 上真机测试效果（这两天上了）
 2. 真机A/B实验：compensate false/true各10次，rosbag录/odom轨迹，report输出的total obs-delay即论文真机延迟数字
 3. 仿真收尾：env_headon.yaml跑v4完整对比（迎面球场景，预期C不再轻松100%，卡尔曼有表现空间）
 4. 补充实验：延迟扫描曲线（0/200/400/600/800/1000ms固定延迟×3方法折线图）；静态场景D组验证卡尔曼无副作用
