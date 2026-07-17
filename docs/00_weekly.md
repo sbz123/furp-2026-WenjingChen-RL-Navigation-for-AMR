@@ -77,6 +77,8 @@
 **Challenges & blockers**
 - 测试试验多次效果不一致：固定random+np.random+torch.manual_seed三重种子，环境变量`OMP_NUM_THREADS=1`限制线程非确定性，SEEDS扩至30个，支持n=30的统计功效
 
+**真机**
+
 - 上真机了，基于官方neupan_ros2节点添加延迟补偿逻辑（`_predict_future_state` + 指令下发周期对齐）
 - 效果不佳，然后发现我们连neupan的效果都没展现出来
 
