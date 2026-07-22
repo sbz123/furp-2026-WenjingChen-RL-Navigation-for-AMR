@@ -29,6 +29,66 @@
 ---
 
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
+### Week 7 — 2026-07-20
+
+**Attended this week's meeting:** Yes
+
+**Progress this week**
+
+#### CNNTD3方向：发现探索-精确矛盾 → 提出STPS
+
+1. **退火实验**：加载探索策略权重，线性退火探索奖励(0.5→0)，30 epoch。窄门恢复100%但U-trap退回0%，**证明两种能力无法在单一策略中共存**。
+
+2. **STPS（Stall-Triggered Policy Switching）**：运行时停滞检测+震荡检测，动态切换精确策略和探索策略。（灾难性遗忘暂时通过训练没办法进一步发展，所以想了切换这个办法）
+   - 停滞检测：20步位移<0.15m → 切换
+   - 震荡检测：12步内方向反转≥5次 → 提前切换
+   - 逃脱持续120步，脱困(位移>0.5m)后切回
+
+3. **参数敏感性**：3×3网格扫描(W×δ)，窄门全网格100%不受影响，W=20整行U-trap稳定67%。
+
+4. **最终对比（3 seeds × 12扰动起点/场景，100 episodes标准环境）**：
+
+| 方法 | 标准 | U-trap | Double-U | 窄门 | 走廊 | 场景平均 |
+|------|------|--------|----------|------|------|---------|
+| CNNTD3 baseline | 87% | 0±0% | 69±4% | 100±0% | 100±0% | 67% |
+| NeuPAN* | % | 0±0% | 0±0% | 0±0% | 0±0% | 0% |
+| **STPS v2 ** | **88%** | **75±7%** | **100±0%** | **100±0%** | **100±0%** | **94%** |
+
+*NeuPAN在所有场景SR=0%：MPC输出负线速度被forward-only约束裁剪为0，d_max=1.0m在紧凑场景过于保守。已确认原版模型未被修改（fresh clone对比一致），原版`test_neupan_standard.py`同样0/10。
+
+注：之前报告的baseline 92%来自训练eval（10 episodes/epoch），100 episodes独立测试为87%。
+
+5. **未成功的尝试**：
+   - 训练U-trap specialist模型：Best SR=83%，与原improved模型持平，无提升
+   - STPS v3（加目标距离检测+渐进逃脱+冷却期）：75±7%，与v2持平，额外复杂度无收益
+
+6. **PINN入门**：跑通两个demo（基础ODE + 差速运动学），理解物理约束损失。在仿真中不如手写积分，价值在真机部署时。
+
+#### DC-NeuPAN方向
+
+7. **headon 30 seeds**：卡尔曼预测在迎面场景**有害**（SR 63→50%，配对赛3:7负），与dash场景（3:1胜）相反。原因：迎面障碍物轨迹突变，匀速假设失效。
+
+**Challenges & blockers**
+- NeuPAN在10×10m场景全部0%——很诡异啊，是neupan机器尺寸太大，测试场景太小，但是我重新训练了0.4 x 0.4的neupan还是过不去
+- 4070主机缺显示器/键盘/网线，未完成配置
+- STPS v3和specialist训练未带来提升，探索时间成本较高
+- 感觉延迟方向的问题要上真机
+
+
+**Next steps**
+1. 测试neupan,如果neupan在这个测试下效果不好，就很棒了
+2. 在真机上测试延迟
+
+**Hours spent:** 
+
+**Links:**
+- STPS代码：eval_stps_v2.py（最终版）, eval_expanded.py, eval_unified.py, eval_diagnose.py
+- 参数敏感性：stps_sensitivity_results.json
+- 统一对比：unified_comparison.json
+- PINN demo：pinn_01_basic_ode.py, pinn_02_diff_drive_kinematics.py
+- DC-NeuPAN headon：test_neupan_delay_eval_v4.py (30 seeds)景**有害**（SR 63→50%，配对赛3:7负），与dash场景（3:1胜）相反。原因：迎面障碍物轨迹突变，匀速假设失效。
+
+
 
 ### Week 6 — 2026-07-13 / 07-15
 
