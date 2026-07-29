@@ -1,0 +1,25 @@
+{
+  "v7_precise": {
+    "S1_U_trap": 0.0,
+    "S2_Double_U": 1.0,
+    "S3_Narrow_door": 1.0,
+    "S5_Corridor": 1.0
+  },
+  "improved_explore": {
+    "S1_U_trap": 0.8333333333333334,
+    "S2_Double_U": 1.0,
+    "S3_Narrow_door": 0.0,
+    "S5_Corridor": 1.0
+  },
+  "STPS": {
+    "S1_U_trap": 0.5833333333333334,
+    "S2_Double_U": 1.0,
+    "S3_Narrow_door": 1.0,
+    "S5_Corridor": 1.0,
+    "standard_100": 0.79
+  },
+  "switch_stats": {
+    "episodes_with_switch": 12,
+    "switched_and_succeeded": 11
+  }
+}

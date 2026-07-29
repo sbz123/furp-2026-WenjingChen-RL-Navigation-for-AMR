@@ -1,0 +1,18 @@
+{
+  "CNNTD3_baseline": {
+    "SR": "80%",
+    "Collision_rate": "19%",
+    "Avg_reward": "63.5",
+    "Avg_path_length": "4.13m",
+    "Path_efficiency": "0.93",
+    "Avg_steps": "32"
+  },
+  "STPS_v2": {
+    "SR": "81%",
+    "Collision_rate": "19%",
+    "Avg_reward": "65.6",
+    "Avg_path_length": "5.59m",
+    "Path_efficiency": "0.81",
+    "Avg_steps": "41"
+  }
+}

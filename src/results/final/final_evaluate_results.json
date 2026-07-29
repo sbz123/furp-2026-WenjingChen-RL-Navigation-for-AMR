@@ -1,0 +1,51 @@
+{
+  "CNNTD3": {
+    "generalization": 0.85,
+    "S1_U_trap": 0.0,
+    "S2_Double_U": 1.0,
+    "S3_Narrow_door": 1.0,
+    "S5_Corridor": 1.0
+  },
+  "CNNTD3_v2": {
+    "generalization": 0.9,
+    "S1_U_trap": 0.0,
+    "S2_Double_U": 1.0,
+    "S3_Narrow_door": 1.0,
+    "S5_Corridor": 1.0
+  },
+  "CNNTD3_improved": {
+    "generalization": 0.8,
+    "S1_U_trap": 1.0,
+    "S2_Double_U": 1.0,
+    "S3_Narrow_door": 0.0,
+    "S5_Corridor": 1.0
+  },
+  "CNNTD3_v3": {
+    "generalization": 0.75,
+    "S1_U_trap": 0.0,
+    "S2_Double_U": 0.75,
+    "S3_Narrow_door": 1.0,
+    "S5_Corridor": 0.8333333333333334
+  },
+  "CNNTD3_v4_improved_best": {
+    "generalization": 0.75,
+    "S1_U_trap": 0.0,
+    "S2_Double_U": 0.75,
+    "S3_Narrow_door": 1.0,
+    "S5_Corridor": 1.0
+  },
+  "CNNTD3_curriculum_only": {
+    "generalization": 0.6,
+    "S1_U_trap": 0.0,
+    "S2_Double_U": 1.0,
+    "S3_Narrow_door": 0.08333333333333333,
+    "S5_Corridor": 1.0
+  },
+  "RCPG": {
+    "generalization": 0.8,
+    "S1_U_trap": 0.0,
+    "S2_Double_U": 0.0,
+    "S3_Narrow_door": 0.75,
+    "S5_Corridor": 1.0
+  }
+}
