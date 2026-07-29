@@ -11,6 +11,7 @@ env/
 node_modules/
 dist/
 build/
+runs/
 
 # OS / editor
 .DS_Store
@@ -29,6 +30,9 @@ Thumbs.db
 *.pth
 data/
 !**/data/.gitkeep
+!artifacts/
+!artifacts/checkpoints/
+!artifacts/checkpoints/**/*.pth
 
 # Secrets — NEVER commit credentials
 .env
