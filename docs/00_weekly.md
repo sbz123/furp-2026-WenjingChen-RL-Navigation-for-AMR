@@ -29,6 +29,32 @@
 ---
 
 <!-- =================  YOUR ENTRIES BELOW  ================= -->
+### Week 8 — 2026-07-27
+
+**Attended this week's meeting:** Yes
+
+**Progress this week**
+-没有什么实质进展，主要是整理相关数据，写poster
+   - 整理最终实验结果表，包括 CNNTD3 baseline、STPS v2、RCPG、curriculum-only、exploration policy、annealed policy 等方法在 Standard、U-trap、      Double-U、Narrow Door、Corridor 场景下的成功率。
+   - 补充完整 RL 指标表，包括 success rate、collision rate、average reward、average path length、path efficiency 和 average steps。
+   - 生成用于 poster 的成功率柱状图和场景平均成功率图。
+   - 准备 3 个成功案例和 3 个失败案例的分析模板，用于满足最终提交要求。
+   - 补充 Abstract、Introduction、Experiment Setup、Method Overview、Conclusion、Future Work 和 Application。
+
+**Challenges & blockers**
+
+**Next steps**
+
+**Hours spent:** 
+
+**Links:**
+- Final docs: `docs/final/`
+- Poster text: `docs/poster_final_copy_paste.md`
+- Poster figures: `docs/img/`
+- Final results: `src/results/final/`
+- Organized code package: `code/`
+- Code manifest: `code/MANIFEST.md`
+
 ### Week 7 — 2026-07-20
 
 **Attended this week's meeting:** Yes
