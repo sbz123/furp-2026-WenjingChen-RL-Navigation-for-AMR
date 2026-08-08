@@ -127,10 +127,6 @@ The final hard-scenario average is computed across four scenario means:
 | CNNTD3 baseline | 67% |
 | STPS v2 | 94% |
 
-NeuPAN's 0% result applies only to the archived compact 10 x 10 m benchmark
-and tested planner configuration. It must not be generalized as a failure of
-NeuPAN outside this configuration.
-
 ### Verification Status on July 29, 2026
 
 The archived artifacts, checkpoint hashes, runtime loading, and headless IR-SIM
@@ -150,24 +146,6 @@ The exact source of that residual discrepancy was not recoverable from the
 retained artifacts. The archive therefore preserves both the original reported
 result and the independently rerun result, rather than replacing one with the
 other or claiming an exact rerun that was not observed.
-
-## Optional NeuPAN Baseline
-
-The archived three-method comparison also needs NeuPAN and its specific planner
-YAML. These were not vendored because they are a separate research codebase and
-have their own broader dependency surface.
-
-The recorded dependency is:
-
-```text
-https://github.com/hanruihua/NeuPAN
-commit 579e7afa239cd7ff61f7f63fbd4aaaecbb136d3b
-planner: example/standard_eval/diff/planner.yaml
-```
-
-The historical unified script is `code/evaluation/eval_unified.py`. It still
-uses the original external directory layout and is retained as provenance, not
-as the supported one-command workflow.
 
 ## Historical Training and Ablations
 
