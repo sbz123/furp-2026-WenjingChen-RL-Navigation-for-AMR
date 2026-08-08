@@ -125,7 +125,6 @@ The final hard-scenario average is computed across four scenario means:
 | Method | Scenario average |
 |---|---:|
 | CNNTD3 baseline | 67% |
-| NeuPAN | 0% |
 | STPS v2 | 94% |
 
 NeuPAN's 0% result applies only to the archived compact 10 x 10 m benchmark
