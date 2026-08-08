@@ -88,11 +88,7 @@ Final archived result summary:
 | Method | Standard | U-trap | Double-U | Narrow Door | Corridor | Scenario Avg. |
 |---|---:|---:|---:|---:|---:|---:|
 | CNNTD3 baseline | 87% | 0 +/- 0% | 69 +/- 4% | 100 +/- 0% | 100 +/- 0% | 67% |
-| NeuPAN | 0% | 0 +/- 0% | 0 +/- 0% | 0 +/- 0% | 0 +/- 0% | 0% |
 | STPS v2 | 88% | 75 +/- 7% | 100 +/- 0% | 100 +/- 0% | 100 +/- 0% | 94% |
-
-The NeuPAN result should be read only as a result for this compact benchmark
-and tested planner configuration. It is not a general claim that NeuPAN fails.
 
 ## Reproducibility
 
@@ -160,8 +156,9 @@ docs/            Project notes, final materials, and figures
 
 ## Team and Roles
 
-| Person | Role |
-|---|---|
-| Wenjing Chen | Project lead; model training, STPS switching logic, evaluation, result organization, and documentation. |
-| Tianxiang Cui | Faculty supervision. |
-| Fuhua Jia | Project guidance and research support. |
+| Person |
+|---|
+| Jiabao Cao | 
+| Wenjing Chen | 
+| Shengqin Jiang |
+| Zexian Xiong | 
